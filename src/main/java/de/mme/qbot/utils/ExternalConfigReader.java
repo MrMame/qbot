@@ -80,7 +80,12 @@ public class ExternalConfigReader {
                 // Get Folder Name
                 jarPath = "/" + jarPath.substring(1,jarPath.lastIndexOf("/")+1);
 
+//            jarPath = System.getProperty("user.dir");
+
+
+
             } catch (URISyntaxException e) {
+                logger.error("Error getting JARs path'" + jarPath + "'");
                 e.printStackTrace();
             }
         return jarPath;
