@@ -73,6 +73,26 @@
 				</executions>
 			</plugin>
 
+
+			<!--
+                This PlugIn wil configure the Manifest File inside the JAR File.
+                EntryPoint Main Class is getting  defined. Also all Dependencies are
+                defined inside classpath with the leading folder prefix "lib"
+            -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.3.0</version>
+				<configuration>
+					<archive>
+						<manifest>
+<!--							<addClasspath>true</addClasspath>-->
+<!--							<classpathPrefix>lib/</classpathPrefix>-->
+							<mainClass>de.mme.qbot.QbotApplication</mainClass>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
 			<!--
                This Plug is used top copy the configuration files from the development  environment into the
                output folder of the application during the install lifecycle
@@ -89,12 +109,12 @@
 						</goals>
 
 						<configuration>
-							<outputDirectory>${basedir}/target/externalConfigs</outputDirectory>
+							<outputDirectory>${basedir}/target</outputDirectory>
 							<resources>
 								<resource>
-									<directory>src/main/resources/externalConfigs</directory>
+									<directory>src/main/resources</directory>
 									<includes>
-										<include>*.properties</include>
+										<include>application.properties</include>
 									</includes>
 								</resource>
 							</resources>

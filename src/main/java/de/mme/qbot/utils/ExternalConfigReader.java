@@ -5,6 +5,7 @@ import de.mme.qbot.QbotApplication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -68,26 +69,50 @@ public class ExternalConfigReader {
 
         String jarPath="";
 
-        try {
+//        try {
                 // Get path of the JAR file
-                jarPath = QbotApplication.class
-                        .getProtectionDomain()
-                        .getCodeSource()
-                        .getLocation()
-                        .toURI()
-                        .getPath();
-                //System.out.println("JAR Path : " + jarPath + "\n");
-                // Get Folder Name
-                jarPath = "/" + jarPath.substring(1,jarPath.lastIndexOf("/")+1);
+//                jarPath = QbotApplication.class
+//                        .getProtectionDomain()
+//                        .getCodeSource()
+//                        .getLocation()
+//                        .toURI()
+//                        .getPath();
+
+            String path = QbotApplication.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+
+            // If running a JAR File, the path will contain also tehh name of the JAR File, seperated by "file:"
+            // also conatining the folder path inside the jar. before "file:" the directory is targeted.
+            // e.g on Windows "F:\Java-Projects\qbot\target\file:\F:\Java-Projects\qbot\target\qbot-0.0.1-SNAPSHOT.jar!\BOOT-INF"
+            // Therefore the streing gets splitted on "file:" and the leading index is used.
+            if(path.contains("file:")){
+                System.out.println("path variable using JAR-Container RAW" + path + "\n");
+                jarPath = path.split("file:")[0].split("!")[0];
+                System.out.println("path variable using JAR-Container AFTER ! Split" + jarPath + "\n");
+                jarPath = jarPath.substring(1,jarPath.lastIndexOf("/")+1);
+                System.out.println("path variable using JAR-Container FINISHED " + path + "\n");
+            }else{
+                // NOT running from JAR fiel
+                System.out.println("path variable using NO JAR-Container " + path + "\n");
+                jarPath = path;
+            }
+
+
+//        File jarFile = new File(path);
+//        jarPath = jarFile.getParentFile().getAbsolutePath();
+          System.out.println("JAR Path : " + jarPath + "\n");
+
+
+            // Get Folder Name
+            jarPath = "/" + jarPath.substring(1,jarPath.lastIndexOf("/")+1);
 
 //            jarPath = System.getProperty("user.dir");
 
-
-
-            } catch (URISyntaxException e) {
-                logger.error("Error getting JARs path'" + jarPath + "'");
-                e.printStackTrace();
-            }
+//
+//
+//            } catch (URISyntaxException e) {
+//                logger.error("Error getting JARs path'" + jarPath + "'");
+//                e.printStackTrace();
+//            }
         return jarPath;
     }
 
