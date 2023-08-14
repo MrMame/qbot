@@ -79,49 +79,20 @@
                 EntryPoint Main Class is getting  defined. Also all Dependencies are
                 defined inside classpath with the leading folder prefix "lib"
             -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>3.3.0</version>
-				<configuration>
-					<archive>
-						<manifest>
-<!--							<addClasspath>true</addClasspath>-->
-<!--							<classpathPrefix>lib/</classpathPrefix>-->
-							<mainClass>de.mme.qbot.QbotApplication</mainClass>
-						</manifest>
-					</archive>
-				</configuration>
-			</plugin>
-			<!--
-               This Plug is used top copy the configuration files from the development  environment into the
-               output folder of the application during the install lifecycle
-            -->
-			<plugin>
-				<artifactId>maven-resources-plugin</artifactId>
-				<version>3.1.0</version>
-				<executions>
-					<execution>
-						<id>copy-resource-one</id>
-						<phase>install</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
+<!--			<plugin>-->
+<!--				<groupId>org.apache.maven.plugins</groupId>-->
+<!--				<artifactId>maven-jar-plugin</artifactId>-->
+<!--				<version>3.3.0</version>-->
+<!--				<configuration>-->
+<!--					<archive>-->
+<!--						<manifest>-->
+<!--&lt;!&ndash;							<addClasspath>true</addClasspath>&ndash;&gt;-->
+<!--&lt;!&ndash;							<classpathPrefix>lib/</classpathPrefix>&ndash;&gt;-->
+<!--						</manifest>-->
+<!--					</archive>-->
+<!--				</configuration>-->
+<!--			</plugin>-->
 
-						<configuration>
-							<outputDirectory>${basedir}/target</outputDirectory>
-							<resources>
-								<resource>
-									<directory>src/main/resources</directory>
-									<includes>
-										<include>application.properties</include>
-									</includes>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
 
 		</plugins>
 	</build>

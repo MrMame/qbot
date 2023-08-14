@@ -1,10 +1,15 @@
 package de.mme.qbot;
 
-import de.mme.qbot.discordapi.JDAFactory;
-import de.mme.qbot.utils.ExternalConfigReader;
-import net.dv8tion.jda.api.JDA;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.origin.SystemEnvironmentOrigin;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.expression.EnvironmentAccessor;
+import org.springframework.core.env.Environment;
 
 import java.io.IOException;
 
@@ -12,23 +17,21 @@ import java.io.IOException;
 @SpringBootApplication
 public class QbotApplication {
 
-	private static JDA jda;
+	@Autowired
+	private Environment environment;
+
+	static Logger logger = LoggerFactory.getLogger(QbotApplication.class);
 
 	public static void main(String[] args) {
 		SpringApplication.run(QbotApplication.class, args);
 
+	}
 
-
-		// DEBUG Config Reader
-		try {
-			ExternalConfigReader cfg = new ExternalConfigReader("discordSettings.properties");
-			//System.out.println("Discord Token is=" + cfg.readProperty("settings.discord.token"));
-			jda = JDAFactory.CreateExampleJda( cfg.readProperty("settings.discord.token"));
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-
-
+	@Bean
+	ApplicationRunner applicationRunner(Environment environment) {
+		return args -> {
+			logger.info("message from application.properties " + environment.getProperty("message-from-application-properties"));
+		};
 	}
 
 }
