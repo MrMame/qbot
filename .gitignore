@@ -33,4 +33,4 @@ build/
 .vscode/
 
 ### Remove property with development discord token
-/src/main/resources/externalConfigs/discordSettings.properties
+/src/main/resources/application.properties
