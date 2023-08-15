@@ -1,47 +1,53 @@
-package de.mme.qbot.discordapi;
+package de.mme.qbot.controllers;
 
 
-import de.mme.qbot.QbotApplication;
-import de.mme.qbot.discordapi.eventlisteners.ChannelListener;
-import de.mme.qbot.discordapi.eventlisteners.ReadyListener;
-import de.mme.qbot.discordapi.slashcommands.EchoSlashCommand;
+import de.mme.qbot.logics.discordapi.slashcommands.SlashCommand;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.hooks.EventListener;
+import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Controller;
 
-@Service
-@PropertySource("classpath:application.properties")
-public class DiscordService {
+import java.util.ArrayList;
+import java.util.List;
+
+@Controller
+@PropertySource("classpath:discord.properties")
+public class DiscordController {
+
+    JDA jda;
+    static Logger logger = LoggerFactory.getLogger(DiscordController.class);
 
     @Autowired
-    private Environment environment;
+    Environment env;
 
-    static Logger logger = LoggerFactory.getLogger(QbotApplication.class);
-
-    private static JDA jda;
-
-    public DiscordService(Environment env) {
-
-        this.environment = env;
-        this.jda = CreateExampleJda();
+    @Autowired
+    public DiscordController(Environment env,
+                             List<SlashCommand> slashCommandsList,
+                             List<EventListener> eventListenerList) {
+        this.env = env;
+        this.jda = CreateJda(slashCommandsList, eventListenerList);
     }
 
-    private JDA CreateExampleJda()  {
 
-        String discordToken = this.environment.getProperty("settings.discord.token");
+
+
+    private JDA CreateJda(List<SlashCommand> slashCommandsList,
+                          List<EventListener> eventListenerList)  {
+
+        String discordToken = this.env.getProperty("settings.discord.token");
 
         this.jda = null;
 
         JDABuilder builder = JDABuilder.createDefault(discordToken);
+
 
         // Disable parts of the cache
         builder.disableCache(CacheFlag.MEMBER_OVERRIDES, CacheFlag.VOICE_STATE);
@@ -51,9 +57,7 @@ public class DiscordService {
         builder.setActivity(Activity.watching("ExampleJDA running"));
 
         // Add Event Listeners ==============================================
-        builder.addEventListeners(new ReadyListener());
-        builder.addEventListeners(new ChannelListener());
-        builder.addEventListeners(EchoSlashCommand.getInstance());
+        eventListenerList.forEach(builder::addEventListeners);
         // ==================================================================
 
         // Build the JDA Object
@@ -68,17 +72,17 @@ public class DiscordService {
         }
 
         // Now Add slash commands ===========================================
-        // Those need to be send to the discord server.
-        jda.updateCommands().addCommands(
-                EchoSlashCommand.getInstance().getCommandData()
-        ).queue();
+        ArrayList<CommandData> commandDatas = new ArrayList();
+        slashCommandsList.forEach((slashCommand)->{
+            commandDatas.add(slashCommand.getCommandData());
+        });
+        jda.updateCommands().addCommands(commandDatas).queue();
+
+
         // ==================================================================
 
         return this.jda;
     }
-
-
-
 
 
 

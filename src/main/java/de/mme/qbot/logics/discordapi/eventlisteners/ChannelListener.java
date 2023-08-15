@@ -1,4 +1,4 @@
-package de.mme.qbot.discordapi.eventlisteners;
+package de.mme.qbot.logics.discordapi.eventlisteners;
 
 import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.events.channel.ChannelCreateEvent;

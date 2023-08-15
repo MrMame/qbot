@@ -17,8 +17,6 @@ import java.io.IOException;
 @SpringBootApplication
 public class QbotApplication {
 
-	@Autowired
-	private Environment environment;
 
 	static Logger logger = LoggerFactory.getLogger(QbotApplication.class);
 
@@ -27,11 +25,6 @@ public class QbotApplication {
 
 	}
 
-	@Bean
-	ApplicationRunner applicationRunner(Environment environment) {
-		return args -> {
-			logger.info("message from application.properties " + environment.getProperty("message-from-application-properties"));
-		};
-	}
+
 
 }
