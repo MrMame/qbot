@@ -1,7 +1,7 @@
-package de.mme.qbot.controllers;
+package de.mme.qbot.controllers.discord;
 
 
-import de.mme.qbot.logics.discordapi.slashcommands.SlashCommand;
+import de.mme.qbot.controllers.discord.slashcommands.SlashCommand;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;

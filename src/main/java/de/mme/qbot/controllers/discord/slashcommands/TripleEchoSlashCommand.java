@@ -1,4 +1,4 @@
-package de.mme.qbot.logics.discordapi.slashcommands;
+package de.mme.qbot.controllers.discord.slashcommands;
 
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;

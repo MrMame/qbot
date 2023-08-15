@@ -1,9 +1,9 @@
-package de.mme.qbot.configs.discordapi;
+package de.mme.qbot.configs.discord;
 
-import de.mme.qbot.logics.discordapi.eventlisteners.ChannelListener;
-import de.mme.qbot.logics.discordapi.eventlisteners.ReadyListener;
-import de.mme.qbot.logics.discordapi.eventlisteners.SlashCommandListener;
-import de.mme.qbot.logics.discordapi.slashcommands.SlashCommand;
+import de.mme.qbot.controllers.discord.eventlisteners.ChannelListener;
+import de.mme.qbot.controllers.discord.eventlisteners.ReadyListener;
+import de.mme.qbot.controllers.discord.eventlisteners.SlashCommandListener;
+import de.mme.qbot.controllers.discord.slashcommands.SlashCommand;
 import net.dv8tion.jda.api.hooks.EventListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;

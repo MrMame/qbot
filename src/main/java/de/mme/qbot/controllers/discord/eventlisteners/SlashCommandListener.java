@@ -1,6 +1,6 @@
-package de.mme.qbot.logics.discordapi.eventlisteners;
+package de.mme.qbot.controllers.discord.eventlisteners;
 
-import de.mme.qbot.logics.discordapi.slashcommands.SlashCommand;
+import de.mme.qbot.controllers.discord.slashcommands.SlashCommand;
 import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.EventListener;

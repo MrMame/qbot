@@ -1,8 +1,8 @@
-package de.mme.qbot.configs.discordapi;
+package de.mme.qbot.configs.discord;
 
-import de.mme.qbot.logics.discordapi.slashcommands.EchoSlashCommand;
-import de.mme.qbot.logics.discordapi.slashcommands.SlashCommand;
-import de.mme.qbot.logics.discordapi.slashcommands.TripleEchoSlashCommand;
+import de.mme.qbot.controllers.discord.slashcommands.EchoSlashCommand;
+import de.mme.qbot.controllers.discord.slashcommands.SlashCommand;
+import de.mme.qbot.controllers.discord.slashcommands.TripleEchoSlashCommand;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
