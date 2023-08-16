@@ -1,4 +1,4 @@
-package de.mme.qbot.discordapi.eventlisteners;
+package de.mme.qbot.controllers.discord.eventlisteners;
 
 import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;

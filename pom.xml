@@ -45,12 +45,6 @@
 			<artifactId>JDA</artifactId>
 			<version>5.0.0-beta.12</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-reload4j -->
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-reload4j</artifactId>
-			<version>2.0.7</version>
-		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -65,7 +59,41 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<mainClass>de.mme.qbot.QbotApplication</mainClass>
+					<layout>JAR</layout>
+					<outputDirectory>${project.build.directory}</outputDirectory>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
+
+
+			<!--
+                This PlugIn wil configure the Manifest File inside the JAR File.
+                EntryPoint Main Class is getting  defined. Also all Dependencies are
+                defined inside classpath with the leading folder prefix "lib"
+            -->
+<!--			<plugin>-->
+<!--				<groupId>org.apache.maven.plugins</groupId>-->
+<!--				<artifactId>maven-jar-plugin</artifactId>-->
+<!--				<version>3.3.0</version>-->
+<!--				<configuration>-->
+<!--					<archive>-->
+<!--						<manifest>-->
+<!--&lt;!&ndash;							<addClasspath>true</addClasspath>&ndash;&gt;-->
+<!--&lt;!&ndash;							<classpathPrefix>lib/</classpathPrefix>&ndash;&gt;-->
+<!--						</manifest>-->
+<!--					</archive>-->
+<!--				</configuration>-->
+<!--			</plugin>-->
+
+
 		</plugins>
 	</build>
 
