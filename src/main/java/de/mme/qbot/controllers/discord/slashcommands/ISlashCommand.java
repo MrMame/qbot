@@ -6,7 +6,7 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 
 import java.util.function.Consumer;
 
-public interface SlashCommand extends EventListener {
+public interface ISlashCommand extends EventListener {
     CommandData getCommandData();
 
     Consumer<SlashCommandFiredEvent> getCommandHandler();

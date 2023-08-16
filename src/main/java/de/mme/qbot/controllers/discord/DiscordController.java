@@ -32,7 +32,7 @@ import java.util.function.Consumer;
 public class DiscordController implements EventListener{
 
     JDA jda;
-    List<SlashCommand> slashCommandsList;
+    List<ISlashCommand> slashCommandsList;
 
     Map<Object, Consumer<GenericEvent>> listenerHandlersMap = new HashMap<>();
 
@@ -112,19 +112,20 @@ public class DiscordController implements EventListener{
         }
 
     // =========================== Internal Privates ===============================================================
-    private void sendSlashCommandsToDiscord(JDA jda,List<SlashCommand> slashCommandsList){
+    private void sendSlashCommandsToDiscord(JDA jda,List<ISlashCommand> slashCommandsList){
         // Now Add slash commands ===========================================
         ArrayList<CommandData> commandDatas = new ArrayList();
-        slashCommandsList.forEach((slashCommand)->{
-            commandDatas.add(slashCommand.getCommandData());
+        slashCommandsList.forEach((ISlashCommand)->{
+            commandDatas.add(ISlashCommand.getCommandData());
         });
         jda.updateCommands().addCommands(commandDatas).queue();
     }
     private void onSlashCommandReceivedEvent(GenericEvent genericEvent){
         SlashCommandInteractionEvent event = (SlashCommandInteractionEvent) genericEvent;
         slashCommandsList.stream()
-                .filter(slashCommand -> {return slashCommand.getCommandData().getName().equals(event.getName());})
-                .forEach(slashCommand -> {slashCommand.getCommandHandler().accept(new SlashCommandFiredEvent(slashCommand,event));});
+                .filter(ISlashCommand -> {return ISlashCommand.getCommandData().getName().equals(event.getName());})
+                .forEach(ISlashCommand -> {
+                    ISlashCommand.getCommandHandler().accept(new SlashCommandFiredEvent(ISlashCommand,event));});
     }
     @Override
     public void onEvent(GenericEvent genericEvent) {
