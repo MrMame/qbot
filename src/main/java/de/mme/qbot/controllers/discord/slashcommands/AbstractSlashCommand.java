@@ -1,5 +1,6 @@
 package de.mme.qbot.controllers.discord.slashcommands;
 
+import de.mme.qbot.controllers.discord.SlashCommandFiredEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
@@ -11,7 +12,7 @@ import java.util.function.Consumer;
 public abstract class AbstractSlashCommand extends ListenerAdapter implements SlashCommand {
 
     private CommandData commandData;
-    private Consumer<SlashCommandInteractionEvent> commandHandler;
+    private Consumer<SlashCommandFiredEvent> commandHandler;
 
     static Logger logger = LoggerFactory.getLogger(AbstractSlashCommand.class);
 
@@ -29,20 +30,21 @@ public abstract class AbstractSlashCommand extends ListenerAdapter implements Sl
     }
 
     @Override
-    public Consumer<SlashCommandInteractionEvent> getCommandHandler() {
+    public Consumer<SlashCommandFiredEvent> getCommandHandler() {
         return commandHandler;
     }
 
-    public void setCommandHandler(Consumer<SlashCommandInteractionEvent> commandHandler) {
+    public void setCommandHandler(Consumer<SlashCommandFiredEvent> commandHandler) {
         this.commandHandler = commandHandler;
     }
 
     @Override
-    public void onSlashCommandInteraction(SlashCommandInteractionEvent event)
+    public void onSlashCommandInteraction(SlashCommandInteractionEvent slashCommandInteractionEvent)
     {
-        if(event.getName().equals(this.commandData.getName())){
-            logger.info("...Start handling slash command " + event.getName());
-            this.commandHandler.accept(event);
+        if(slashCommandInteractionEvent.getName().equals(this.commandData.getName())){
+            SlashCommandFiredEvent slashEvent = new SlashCommandFiredEvent(this,slashCommandInteractionEvent);
+            logger.info("...Start handling slash command " + this.commandData.getName());
+            this.commandHandler.accept(slashEvent);
         }
     }
 
