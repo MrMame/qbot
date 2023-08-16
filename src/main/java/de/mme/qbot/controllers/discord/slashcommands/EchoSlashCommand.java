@@ -1,20 +1,22 @@
 package de.mme.qbot.controllers.discord.slashcommands;
 
-import net.dv8tion.jda.api.interactions.commands.OptionMapping;
+import de.mme.qbot.controllers.discord.SlashCommandFiredEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 
+import java.util.function.Consumer;
+
 public class EchoSlashCommand extends AbstractSlashCommand {
 
-    private final static String COMMAND_NAME ="echo-channel";
-    private final static String COMMAND_DESCRIPTION ="Echoes all input back to channel";
+    public final static String COMMAND_NAME ="echo-channel";
+    public final static String COMMAND_DESCRIPTION ="Echoes all input back to channel";
 
-    private final static String COMMAND_OPTION_TEXT_NAME ="text";
-    private final static String COMMAND_OPTION_TEXT_DESCRIPTION ="Text to echo back in channel";
+    public final static String COMMAND_OPTION_TEXT_NAME ="text";
+    public final static String COMMAND_OPTION_TEXT_DESCRIPTION ="Text to echo back in channel";
 
 
-    public EchoSlashCommand() {
+    public EchoSlashCommand(Consumer<SlashCommandFiredEvent> eventHandler) {
 
         CommandData commandData = Commands.slash(COMMAND_NAME,COMMAND_DESCRIPTION)
                             .addOption(OptionType.STRING,
@@ -23,9 +25,8 @@ public class EchoSlashCommand extends AbstractSlashCommand {
 
 
         this.setCommandData(commandData);
-        this.setCommandHandler((event)->{
-            event.reply("Echoing: \n\n" + event.getOption(COMMAND_OPTION_TEXT_NAME, OptionMapping::getAsString)).queue();
-        });
+        this.setCommandHandler(eventHandler);
+
 
     }
 
