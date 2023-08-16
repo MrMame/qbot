@@ -6,9 +6,9 @@ He will collect custom questions.
 
 # How to Deploy
 
-0. Rename "src\main\resources\DEFAULT_application.properties" into 
-"src\main\resources\application.properties".
-1. Do your necessary settings inside the "src\main\resources\application.properties" file.
+0. Rename "src\main\resources\DEFAULT_discord.properties" into 
+"src\main\resources\discord.properties".
+1. Do your necessary settings inside the "src\main\resources\discord.properties" file.
 2. Run Mavens install-lifecycle
 
 # How to add new SlashCommands
