@@ -2,6 +2,8 @@ package de.mme.qbot.controllers.discord;
 
 
 import de.mme.qbot.controllers.discord.slashcommands.*;
+import de.mme.qbot.model.domain.Question;
+import de.mme.qbot.services.IQuestionService;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
@@ -32,6 +34,7 @@ import java.util.function.Consumer;
 public class DiscordController implements EventListener{
 
     JDA jda;
+    IQuestionService questionService;
     List<ISlashCommand> slashCommandsList;
 
     Map<Object, Consumer<GenericEvent>> listenerHandlersMap = new HashMap<>();
@@ -39,15 +42,18 @@ public class DiscordController implements EventListener{
     static Logger logger = LoggerFactory.getLogger(DiscordController.class);
 
     @Autowired
-    public DiscordController(Environment env) {
+    public DiscordController(Environment env, IQuestionService questionService) {
         // First create the Discord API Object
         this.jda = createDiscordApiObject(env);
+        // Service for Question persitence
+        this.questionService = questionService;
 
         // Register all used SlashCommands and its EventHandlers, used by the DiscordController
         this.slashCommandsList = new ArrayList<>();
         this.slashCommandsList.add(new EchoSlashCommand(this::onEchoSlashCommand));
         this.slashCommandsList.add(new TripleEchoSlashCommand(this::onTripleEchoSlashCommand));
         this.slashCommandsList.add(new QuestionAddSlashCommand(this::onQuestionAddSlashCommand));
+        this.slashCommandsList.add(new QuestionsGetAllSlashCommand(this::onQuestionGetAllSlashCommand));
 
         // Register all JDA Events and its EventHandlers, used by the DiscordController
         this.listenerHandlersMap.put(ChannelDeleteEvent.class,this::onChannelDeleteEvent);
@@ -80,6 +86,21 @@ public class DiscordController implements EventListener{
     }
 
     // --------------------------- SlashCommands Events (Add if necessary) ------------------------------------------
+
+    private void onQuestionGetAllSlashCommand(SlashCommandFiredEvent event){
+        QuestionsGetAllSlashCommand qSc = ((QuestionsGetAllSlashCommand) event.getFiredSlashCommand());
+
+        StringBuilder returnText = new StringBuilder();
+        for(Question q : this.questionService.getAllQuestions()){
+            returnText.append(q.toString() + "\n\n");
+        }
+
+        event.reply("onQuestionGetAllSlashCommand: \n\n"
+                        + returnText.toString())
+                .queue();
+
+    }
+
     private void onEchoSlashCommand(SlashCommandFiredEvent event){
 
         EchoSlashCommand echoSlashCommand = ((EchoSlashCommand)event.getFiredSlashCommand());
@@ -91,8 +112,14 @@ public class DiscordController implements EventListener{
     private void onQuestionAddSlashCommand(SlashCommandFiredEvent event){
         QuestionAddSlashCommand questionAddSlashCommand =  ((QuestionAddSlashCommand) (event.getFiredSlashCommand()));
 
+        String questionText = event.getOption(questionAddSlashCommand.COMMAND_OPTION_QUESTION_NAME, OptionMapping::getAsString);
+        Question newQuestion = new Question(questionText);
+
+        String questionAddReturnMessage = this.questionService.saveQuestion(newQuestion)==null?"not add":"was add";
+
         event.reply("onQuestionAddSlashCommand: \n\n"
-                + event.getOption(questionAddSlashCommand.COMMAND_OPTION_QUESTION_NAME, OptionMapping::getAsString))
+                + event.getOption(questionAddSlashCommand.COMMAND_OPTION_QUESTION_NAME, OptionMapping::getAsString)
+                + "Returned = Question " + questionAddReturnMessage)
                 .queue();
     }
     private void onTripleEchoSlashCommand(SlashCommandFiredEvent event){
