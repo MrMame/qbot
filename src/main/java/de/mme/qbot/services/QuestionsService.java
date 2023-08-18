@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,16 +27,25 @@ public class QuestionsService implements IQuestionService{
         Question retQuestion = null;
         boolean isReturnQuestionFound = false;
 
-        for(Question q :repository.findAll()){
-            if(isReturnQuestionFound == false
-                    && !alreadyGottenQuestion.contains(q)){
+        // if we already delievered all available questions, we clear the list and begin from the beginning
+        if(alreadyGottenQuestion.size()>= repository.count()){
+            alreadyGottenQuestion.clear();
+        }
+
+        // Get all Questions and shuffle the List for randomness
+        List<Question> shuffledQuestionList = new ArrayList<>();
+        repository.findAll().iterator().forEachRemaining(shuffledQuestionList::add);
+        Collections.shuffle(shuffledQuestionList);
+
+        // Get Question from shuffled List. If Question was not gotten already, return the question
+        qLoop : for(Question q :shuffledQuestionList){
+            if(!alreadyGottenQuestion.contains(q)){
                 alreadyGottenQuestion.add(q);
                 retQuestion = q;
-                isReturnQuestionFound = true;
+                break qLoop;
             }
-
         }
-        return Optional.of(retQuestion);
+        return Optional.ofNullable(retQuestion);
     }
 
     @Override
@@ -51,6 +61,11 @@ public class QuestionsService implements IQuestionService{
     @Override
     public Iterable<Question> getAllQuestions(){
         return repository.findAll();
+    }
+
+    @Override
+    public void removeAll() {
+        repository.deleteAll();
     }
 
 
