@@ -53,7 +53,7 @@ public class DiscordController implements EventListener{
         this.slashCommandsList.add(new EchoSlashCommand(this::onEchoSlashCommand));
         this.slashCommandsList.add(new TripleEchoSlashCommand(this::onTripleEchoSlashCommand));
         this.slashCommandsList.add(new QuestionAddSlashCommand(this::onQuestionAddSlashCommand));
-        this.slashCommandsList.add(new QuestionsGetAllSlashCommand(this::onQuestionGetAllSlashCommand));
+        this.slashCommandsList.add(new QuestionGetAllSlashCommand(this::onQuestionGetAllSlashCommand));
 
         // Register all JDA Events and its EventHandlers, used by the DiscordController
         this.listenerHandlersMap.put(ChannelDeleteEvent.class,this::onChannelDeleteEvent);
@@ -88,7 +88,7 @@ public class DiscordController implements EventListener{
     // --------------------------- SlashCommands Events (Add if necessary) ------------------------------------------
 
     private void onQuestionGetAllSlashCommand(SlashCommandFiredEvent event){
-        QuestionsGetAllSlashCommand qSc = ((QuestionsGetAllSlashCommand) event.getFiredSlashCommand());
+        QuestionGetAllSlashCommand qSc = ((QuestionGetAllSlashCommand) event.getFiredSlashCommand());
 
         StringBuilder returnText = new StringBuilder();
         for(Question q : this.questionService.getAllQuestions()){
