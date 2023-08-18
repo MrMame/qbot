@@ -48,5 +48,10 @@ public class QuestionsService implements IQuestionService{
         return repository.save(question);
     }
 
+    @Override
+    public Iterable<Question> getAllQuestions(){
+        return repository.findAll();
+    }
+
 
 }
