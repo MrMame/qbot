@@ -23,10 +23,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Controller;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 
 @Controller
@@ -54,6 +51,9 @@ public class DiscordController implements EventListener{
         this.slashCommandsList.add(new TripleEchoSlashCommand(this::onTripleEchoSlashCommand));
         this.slashCommandsList.add(new QuestionAddSlashCommand(this::onQuestionAddSlashCommand));
         this.slashCommandsList.add(new QuestionGetAllSlashCommand(this::onQuestionGetAllSlashCommand));
+        this.slashCommandsList.add(new QuestionGetUniqueRandomSlashCommand(this::onQuestionGetUniqueRandomSlashCommand));
+        this.slashCommandsList.add(new QuestionRemoveAllSlashCommand(this::onQuestionRemoveAllSlashCommand));
+
 
         // Register all JDA Events and its EventHandlers, used by the DiscordController
         this.listenerHandlersMap.put(ChannelDeleteEvent.class,this::onChannelDeleteEvent);
@@ -100,6 +100,22 @@ public class DiscordController implements EventListener{
                 .queue();
 
     }
+    private void onQuestionGetUniqueRandomSlashCommand(SlashCommandFiredEvent event){
+
+        String questionText;
+        Question uniqueQuestion;
+        try{
+            uniqueQuestion =  this.questionService.getUniqueRandomQuestion().get();
+            questionText = uniqueQuestion.getQuestionText();
+        }catch(NoSuchElementException ex){
+            questionText = "No question available.";
+        }
+
+        event.reply("onQuestionGetUniqueRandomSlashCommand: \n\n"
+                        + questionText)
+                .queue();
+
+    }
 
     private void onEchoSlashCommand(SlashCommandFiredEvent event){
 
@@ -120,6 +136,14 @@ public class DiscordController implements EventListener{
         event.reply("onQuestionAddSlashCommand: \n\n"
                 + event.getOption(questionAddSlashCommand.COMMAND_OPTION_QUESTION_NAME, OptionMapping::getAsString)
                 + "Returned = Question " + questionAddReturnMessage)
+                .queue();
+    }
+    private void onQuestionRemoveAllSlashCommand(SlashCommandFiredEvent event){
+
+        questionService.removeAll();
+
+        event.reply("onQuestionRemoveAllSlashCommand: \n\n"
+                + " All QuestionsRemoved ")
                 .queue();
     }
     private void onTripleEchoSlashCommand(SlashCommandFiredEvent event){
