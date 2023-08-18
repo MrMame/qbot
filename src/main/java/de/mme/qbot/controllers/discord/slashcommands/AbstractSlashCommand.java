@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.function.Consumer;
 
-public abstract class AbstractSlashCommand extends ListenerAdapter implements SlashCommand {
+public abstract class AbstractSlashCommand extends ListenerAdapter implements ISlashCommand {
 
     private CommandData commandData;
     private Consumer<SlashCommandFiredEvent> commandHandler;

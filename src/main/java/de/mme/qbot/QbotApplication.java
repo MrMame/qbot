@@ -1,9 +1,12 @@
 package de.mme.qbot;
 
+import de.mme.qbot.model.domain.Question;
+import de.mme.qbot.repositories.IQuestionRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.origin.SystemEnvironmentOrigin;
@@ -24,7 +27,6 @@ public class QbotApplication {
 		SpringApplication.run(QbotApplication.class, args);
 
 	}
-
 
 
 }

@@ -2,9 +2,13 @@ package de.mme.qbot.controllers.discord;
 
 
 import de.mme.qbot.controllers.discord.slashcommands.*;
+import de.mme.qbot.model.domain.Question;
+import de.mme.qbot.services.IQuestionService;
+import de.mme.qbot.views.discord.QuestionPrinters;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.events.channel.ChannelCreateEvent;
 import net.dv8tion.jda.api.events.channel.ChannelDeleteEvent;
@@ -21,10 +25,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Controller;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 
 @Controller
@@ -32,22 +33,28 @@ import java.util.function.Consumer;
 public class DiscordController implements EventListener{
 
     JDA jda;
-    List<SlashCommand> slashCommandsList;
+    IQuestionService questionService;
+    List<ISlashCommand> slashCommandsList;
 
     Map<Object, Consumer<GenericEvent>> listenerHandlersMap = new HashMap<>();
 
     static Logger logger = LoggerFactory.getLogger(DiscordController.class);
 
     @Autowired
-    public DiscordController(Environment env) {
+    public DiscordController(Environment env, IQuestionService questionService) {
         // First create the Discord API Object
         this.jda = createDiscordApiObject(env);
+        // Service for Question persitence
+        this.questionService = questionService;
 
         // Register all used SlashCommands and its EventHandlers, used by the DiscordController
         this.slashCommandsList = new ArrayList<>();
-        this.slashCommandsList.add(new EchoSlashCommand(this::onEchoSlashCommand));
-        this.slashCommandsList.add(new TripleEchoSlashCommand(this::onTripleEchoSlashCommand));
         this.slashCommandsList.add(new QuestionAddSlashCommand(this::onQuestionAddSlashCommand));
+        this.slashCommandsList.add(new QuestionGetAllSlashCommand(this::onQuestionGetAllSlashCommand));
+        this.slashCommandsList.add(new QuestionGetUniqueRandomSlashCommand(this::onQuestionGetUniqueRandomSlashCommand));
+        this.slashCommandsList.add(new QuestionRemoveAllSlashCommand(this::onQuestionRemoveAllSlashCommand));
+        this.slashCommandsList.add(new QuestionRemoveByIdSlashCommand(this::onQuestionRemoveByIdSlashCommand));
+
 
         // Register all JDA Events and its EventHandlers, used by the DiscordController
         this.listenerHandlersMap.put(ChannelDeleteEvent.class,this::onChannelDeleteEvent);
@@ -80,51 +87,107 @@ public class DiscordController implements EventListener{
     }
 
     // --------------------------- SlashCommands Events (Add if necessary) ------------------------------------------
-    private void onEchoSlashCommand(SlashCommandFiredEvent event){
 
-        EchoSlashCommand echoSlashCommand = ((EchoSlashCommand)event.getFiredSlashCommand());
+    private void onQuestionGetAllSlashCommand(SlashCommandFiredEvent event){
+        QuestionGetAllSlashCommand qSc = ((QuestionGetAllSlashCommand) event.getFiredSlashCommand());
 
-        event.reply("onEchoSlashCommand: \n\n"
-                + event.getOption(echoSlashCommand.COMMAND_OPTION_TEXT_NAME, OptionMapping::getAsString))
+        StringBuilder allQuestions = new StringBuilder();
+        this.questionService.getAllQuestions().forEach((question) -> {
+            allQuestions.append(question.toString() + "\n\n");
+        });
+
+        if(allQuestions.isEmpty())allQuestions.append("No questions available.");
+
+        MessageEmbed returnMessage = QuestionPrinters.createSystemEmbed(allQuestions.toString());
+
+        event.replyEmbeds(returnMessage)
+                .setEphemeral(true)
+                .queue();
+
+    }
+    private void onQuestionGetUniqueRandomSlashCommand(SlashCommandFiredEvent event){
+
+        MessageEmbed qemb;
+        Question uniqueQuestion;
+        try{
+            uniqueQuestion =  this.questionService.getUniqueRandomQuestion().get();
+            qemb =  QuestionPrinters.createNormalEmbed(uniqueQuestion);
+        }catch(NoSuchElementException ex){
+            qemb =  QuestionPrinters.createErrorEmbed("No question available. Please add some questions first.");
+        }
+
+        event.replyEmbeds(qemb)
                 .queue();
     }
     private void onQuestionAddSlashCommand(SlashCommandFiredEvent event){
         QuestionAddSlashCommand questionAddSlashCommand =  ((QuestionAddSlashCommand) (event.getFiredSlashCommand()));
 
-        event.reply("onQuestionAddSlashCommand: \n\n"
-                + event.getOption(questionAddSlashCommand.COMMAND_OPTION_QUESTION_NAME, OptionMapping::getAsString))
+        String questionText = event.getOption(questionAddSlashCommand.COMMAND_OPTION_QUESTION_NAME, OptionMapping::getAsString);
+        Question newQuestion = new Question(questionText);
+
+        Question savedQuestion = this.questionService.saveQuestion(newQuestion);
+
+        String questionAddReturnMessage;
+        questionAddReturnMessage = (savedQuestion==null)?
+                                        "Error - Couldn't add question!"
+                                        :"OK - Added Question \n" + savedQuestion.toString();
+
+        MessageEmbed emb = QuestionPrinters.createSystemEmbed(questionAddReturnMessage);
+
+        event.replyEmbeds(emb)
+                .setEphemeral(true)
                 .queue();
     }
-    private void onTripleEchoSlashCommand(SlashCommandFiredEvent event){
+    private void onQuestionRemoveAllSlashCommand(SlashCommandFiredEvent event){
 
-            TripleEchoSlashCommand tripleEchoSlashCommand = ((TripleEchoSlashCommand) (event.getFiredSlashCommand()));
+        questionService.removeAll();
 
-            event.getChannel().sendMessage("First Echoing: \n\n"
-                    + event.getOption(TripleEchoSlashCommand.COMMAND_OPTION_TEXT_A_NAME, OptionMapping::getAsString))
-                    .queue();
-            event.getChannel().sendMessage("Second Echoing: \n\n"
-                    + event.getOption(TripleEchoSlashCommand.COMMAND_OPTION_TEXT_B_NAME, OptionMapping::getAsString))
-                    .queue();
-            event.reply("Third Echoing: \n\n"
-                    + event.getOption(TripleEchoSlashCommand.COMMAND_OPTION_TEXT_C_NAME, OptionMapping::getAsString))
-                    .queue();
+        MessageEmbed emb = QuestionPrinters.createSystemEmbed("All questions are removed.");
 
+        event.replyEmbeds(emb)
+                .setEphemeral(true)
+                .queue();
+    }
+    private void onQuestionRemoveByIdSlashCommand(SlashCommandFiredEvent event){
+
+        long questionId = event.getOption(QuestionRemoveByIdSlashCommand.COMMAND_OPTION_ID_NAME, OptionMapping::getAsLong);
+
+        Optional<Question> targetQuestion = questionService.getQuestionById(questionId);
+
+        StringBuilder retMessage = new StringBuilder();
+
+        if(targetQuestion.isEmpty()){
+            retMessage.append("There is no question found with id " + questionId
+                    + "\n No question was deleted.");
+        }else{
+            questionService.removeQuestionById(questionId);
+            retMessage.append("Question with id " + questionId
+                    + "\n was deleted."
+                    + "\n\n " + targetQuestion.get().toString() );
         }
 
+        MessageEmbed emb = QuestionPrinters.createSystemEmbed(retMessage.toString());
+
+        event.replyEmbeds(emb)
+                .setEphemeral(true)
+                .queue();
+    }
+
     // =========================== Internal Privates ===============================================================
-    private void sendSlashCommandsToDiscord(JDA jda,List<SlashCommand> slashCommandsList){
+    private void sendSlashCommandsToDiscord(JDA jda,List<ISlashCommand> slashCommandsList){
         // Now Add slash commands ===========================================
         ArrayList<CommandData> commandDatas = new ArrayList();
-        slashCommandsList.forEach((slashCommand)->{
-            commandDatas.add(slashCommand.getCommandData());
+        slashCommandsList.forEach((ISlashCommand)->{
+            commandDatas.add(ISlashCommand.getCommandData());
         });
         jda.updateCommands().addCommands(commandDatas).queue();
     }
     private void onSlashCommandReceivedEvent(GenericEvent genericEvent){
         SlashCommandInteractionEvent event = (SlashCommandInteractionEvent) genericEvent;
         slashCommandsList.stream()
-                .filter(slashCommand -> {return slashCommand.getCommandData().getName().equals(event.getName());})
-                .forEach(slashCommand -> {slashCommand.getCommandHandler().accept(new SlashCommandFiredEvent(slashCommand,event));});
+                .filter(ISlashCommand -> {return ISlashCommand.getCommandData().getName().equals(event.getName());})
+                .forEach(ISlashCommand -> {
+                    ISlashCommand.getCommandHandler().accept(new SlashCommandFiredEvent(ISlashCommand,event));});
     }
     @Override
     public void onEvent(GenericEvent genericEvent) {
