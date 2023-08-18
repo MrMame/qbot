@@ -4,9 +4,11 @@ package de.mme.qbot.controllers.discord;
 import de.mme.qbot.controllers.discord.slashcommands.*;
 import de.mme.qbot.model.domain.Question;
 import de.mme.qbot.services.IQuestionService;
+import de.mme.qbot.views.discord.QuestionPrinters;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.events.channel.ChannelCreateEvent;
 import net.dv8tion.jda.api.events.channel.ChannelDeleteEvent;
@@ -90,31 +92,25 @@ public class DiscordController implements EventListener{
     private void onQuestionGetAllSlashCommand(SlashCommandFiredEvent event){
         QuestionGetAllSlashCommand qSc = ((QuestionGetAllSlashCommand) event.getFiredSlashCommand());
 
-        StringBuilder returnText = new StringBuilder();
-        for(Question q : this.questionService.getAllQuestions()){
-            returnText.append(q.toString() + "\n\n");
-        }
+        MessageEmbed returnMessage = QuestionPrinters.createNormalEmbed(this.questionService.getAllQuestions());
 
-        event.reply("onQuestionGetAllSlashCommand: \n\n"
-                        + returnText.toString())
+        event.replyEmbeds(returnMessage)
                 .queue();
 
     }
     private void onQuestionGetUniqueRandomSlashCommand(SlashCommandFiredEvent event){
 
-        String questionText;
+        MessageEmbed qemb;
         Question uniqueQuestion;
         try{
             uniqueQuestion =  this.questionService.getUniqueRandomQuestion().get();
-            questionText = uniqueQuestion.getQuestionText();
+            qemb =  QuestionPrinters.createNormalEmbed(uniqueQuestion);
         }catch(NoSuchElementException ex){
-            questionText = "No question available.";
+             qemb =  QuestionPrinters.createErrorEmbed("No question available. Please add some questions first.");
         }
 
-        event.reply("onQuestionGetUniqueRandomSlashCommand: \n\n"
-                        + questionText)
+        event.replyEmbeds(qemb)
                 .queue();
-
     }
 
     private void onEchoSlashCommand(SlashCommandFiredEvent event){
