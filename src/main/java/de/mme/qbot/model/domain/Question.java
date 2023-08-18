@@ -6,6 +6,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jdk.jfr.DataAmount;
 
+import java.util.Objects;
+
 @Entity
 public class Question {
 
@@ -32,6 +34,18 @@ public class Question {
     }
 
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Question question = (Question) o;
+        return Objects.equals(id, question.id) && Objects.equals(questionText, question.questionText);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, questionText);
+    }
 
     @Override
     public String toString() {
