@@ -131,11 +131,15 @@ public class DiscordController implements EventListener{
         String questionText = event.getOption(questionAddSlashCommand.COMMAND_OPTION_QUESTION_NAME, OptionMapping::getAsString);
         Question newQuestion = new Question(questionText);
 
-        String questionAddReturnMessage = this.questionService.saveQuestion(newQuestion)==null?"not add":"was add";
+        Question savedQuestion = this.questionService.saveQuestion(newQuestion);
 
-        event.reply("onQuestionAddSlashCommand: \n\n"
-                + event.getOption(questionAddSlashCommand.COMMAND_OPTION_QUESTION_NAME, OptionMapping::getAsString)
-                + "Returned = Question " + questionAddReturnMessage)
+        String questionAddReturnMessage;
+        questionAddReturnMessage = (savedQuestion==null)?
+                                        "Error - Couldn't add question!"
+                                        :"OK - Added Question \n" + savedQuestion.toString();
+
+        event.reply(questionAddReturnMessage)
+                .setEphemeral(true)
                 .queue();
     }
     private void onQuestionRemoveAllSlashCommand(SlashCommandFiredEvent event){
