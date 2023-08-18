@@ -10,4 +10,8 @@ public interface IQuestionService {
     public Optional<Question> getQuestionById(long id);
 
     public Question saveQuestion(Question question);
-}
+
+    public Iterable<Question> getAllQuestions();
+
+
+    }
