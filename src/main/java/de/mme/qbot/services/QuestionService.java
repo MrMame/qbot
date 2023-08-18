@@ -11,14 +11,14 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class QuestionsService implements IQuestionService{
+public class QuestionService implements IQuestionService{
 
     IQuestionRepository repository;
 
     List<Question> alreadyGottenQuestion = new ArrayList<>();
 
     @Autowired
-    public QuestionsService(IQuestionRepository repository) {
+    public QuestionService(IQuestionRepository repository) {
         this.repository = repository;
     }
 
@@ -50,7 +50,7 @@ public class QuestionsService implements IQuestionService{
 
     @Override
     public Optional<Question> getQuestionById(long id) {
-        return Optional.of(repository.findById(id));
+        return Optional.ofNullable(repository.findById(id));
     }
 
     @Override
@@ -66,6 +66,11 @@ public class QuestionsService implements IQuestionService{
     @Override
     public void removeAll() {
         repository.deleteAll();
+    }
+
+    @Override
+    public void removeQuestionById(long id) {
+        repository.deleteById(id);
     }
 
 
