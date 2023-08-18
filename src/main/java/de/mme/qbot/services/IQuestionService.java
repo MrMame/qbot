@@ -13,5 +13,6 @@ public interface IQuestionService {
 
     public Iterable<Question> getAllQuestions();
 
+public void removeAll();
 
     }
