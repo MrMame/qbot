@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.events.channel.ChannelCreateEvent;
 import net.dv8tion.jda.api.events.channel.ChannelDeleteEvent;
@@ -18,6 +19,8 @@ import net.dv8tion.jda.api.hooks.EventListener;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
+import net.dv8tion.jda.api.utils.messages.MessageEditBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -107,17 +110,33 @@ public class DiscordController implements EventListener{
     }
     private void onQuestionGetUniqueRandomSlashCommand(SlashCommandFiredEvent event){
 
-        MessageEmbed qemb;
-        Question uniqueQuestion;
+
+        ;
+        boolean hasAnswerA=false;
         try{
-            uniqueQuestion =  this.questionService.getUniqueRandomQuestion().get();
-            qemb =  QuestionPrinters.createNormalEmbed(uniqueQuestion);
+            final Question uniqueQuestion =  this.questionService.getUniqueRandomQuestion().get();
+            final MessageEmbed qemb = QuestionPrinters.createNormalEmbed(uniqueQuestion);
+
+            event.replyEmbeds(qemb).queue((msg)->{
+                    msg.retrieveOriginal().queue((rMsg)->{
+                        if(uniqueQuestion.getAnswerA() != null && !uniqueQuestion.getAnswerA().isEmpty()){
+                            rMsg.addReaction(Emoji.fromUnicode("U+1F1E6")).queue();}  // U+1F1E6 --> A
+                        if(uniqueQuestion.getAnswerB() != null && !uniqueQuestion.getAnswerB().isEmpty()){
+                            rMsg.addReaction(Emoji.fromUnicode("U+1F1E7")).queue();}  // U+1F1E7 --> B
+                        if(uniqueQuestion.getAnswerC() != null && !uniqueQuestion.getAnswerC().isEmpty()){
+                            rMsg.addReaction(Emoji.fromUnicode("U+1F1E8")).queue();}  // U+1F1E8 --> C
+                        if(uniqueQuestion.getAnswerD() != null && !uniqueQuestion.getAnswerD().isEmpty()){
+                            rMsg.addReaction(Emoji.fromUnicode("U+1F1E9")).queue();}  // U+1F1E9 --> D
+                        if(uniqueQuestion.getAnswerE() != null && !uniqueQuestion.getAnswerE().isEmpty()){
+                            rMsg.addReaction(Emoji.fromUnicode("U+1F1EA")).queue();}  // U+1F1E6 --> E
+                    });
+
+            });
+
         }catch(NoSuchElementException ex){
-            qemb =  QuestionPrinters.createErrorEmbed("No question available. Please add some questions first.");
+            event.replyEmbeds(QuestionPrinters.createErrorEmbed("No question available. Please add some questions first.")).queue();
         }
 
-        event.replyEmbeds(qemb)
-                .queue();
     }
     private void onQuestionAddSlashCommand(SlashCommandFiredEvent event){
         QuestionAddSlashCommand questionAddSlashCommand =  ((QuestionAddSlashCommand) (event.getFiredSlashCommand()));
