@@ -15,7 +15,12 @@ public class Question {
     @GeneratedValue(strategy= GenerationType.AUTO)
     private Long id;
 
-    private String questionText;
+    private String questionText="";
+    private String answerA="";
+    private String answerB="";
+    private String answerC="";
+    private String answerD="";
+    private String answerE="";
 
 
     public Long getId() {
@@ -27,24 +32,52 @@ public class Question {
         return questionText;
     }
 
+    public String getAnswerA() {
+        return answerA;
+    }
+
+    public String getAnswerB() {
+        return answerB;
+    }
+
+    public String getAnswerC() {
+        return answerC;
+    }
+
+    public String getAnswerD() {
+        return answerD;
+    }
+
+    public String getAnswerE() {
+        return answerE;
+    }
+
+    public boolean isAnswerAvailableA(){
+        return !(answerA==null || answerA.isEmpty() || answerA.isBlank());
+    }
+    public boolean isAnswerAvailableB(){
+        return !(answerB==null || answerB.isEmpty() || answerB.isBlank());
+    }
+    public boolean isAnswerAvailableC(){
+        return !(answerC==null || answerC.isEmpty() || answerC.isBlank());
+    }
+    public boolean isAnswerAvailableD(){
+        return !(answerD==null || answerD.isEmpty() || answerD.isBlank());
+    }
+    public boolean isAnswerAvailableE(){
+        return !(answerE==null || answerE.isEmpty() || answerE.isBlank());
+    }
+
+
     protected Question(){}
 
-    public Question(String questionText){
+    public Question(String questionText,String answerA,String answerB,String answerC,String answerD,String answerE){
         this.questionText = questionText;
-    }
-
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Question question = (Question) o;
-        return Objects.equals(id, question.id) && Objects.equals(questionText, question.questionText);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, questionText);
+        this.answerA = answerA;
+        this.answerB = answerB;
+        this.answerC = answerC;
+        this.answerD = answerD;
+        this.answerE = answerE;
     }
 
     @Override
@@ -52,6 +85,24 @@ public class Question {
         return "Question{" +
                 "id=" + id +
                 ", questionText='" + questionText + '\'' +
+                ", answerA='" + answerA + '\'' +
+                ", answerB='" + answerB + '\'' +
+                ", answerC='" + answerC + '\'' +
+                ", answerD='" + answerD + '\'' +
+                ", answerE='" + answerE + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Question question = (Question) o;
+        return Objects.equals(id, question.id) && Objects.equals(questionText, question.questionText) && Objects.equals(answerA, question.answerA) && Objects.equals(answerB, question.answerB) && Objects.equals(answerC, question.answerC) && Objects.equals(answerD, question.answerD) && Objects.equals(answerE, question.answerE);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, questionText, answerA, answerB, answerC, answerD, answerE);
     }
 }
