@@ -42,11 +42,11 @@ public class QuestionPrinters {
                 .setThumbnail("https://img.freepik.com/vektoren-kostenlos/nette-pizza-cartoon-vektor-icon-illustration-fast-food-symbol-konzept-flacher-cartoon-stil_138676-2588.jpg");
                 ;
                 // If Answer is exsiting, add an additional Field for it
-                if(question.getAnswerA() != null && !question.getAnswerA().isEmpty())eb.addField(FIELDNAME_EMBED_ANSWER_A, question.getAnswerA(), false);
-                if(question.getAnswerB() != null && !question.getAnswerB().isEmpty())eb.addField(FIELDNAME_EMBED_ANSWER_B, question.getAnswerB(), false);
-                if(question.getAnswerC() != null && !question.getAnswerC().isEmpty())eb.addField(FIELDNAME_EMBED_ANSWER_C, question.getAnswerC(), false);
-                if(question.getAnswerD() != null && !question.getAnswerD().isEmpty())eb.addField(FIELDNAME_EMBED_ANSWER_D, question.getAnswerD(), false);
-                if(question.getAnswerE() != null && !question.getAnswerE().isEmpty())eb.addField(FIELDNAME_EMBED_ANSWER_E, question.getAnswerE(), false);
+                if(question.isAnswerAvailableA())eb.addField(FIELDNAME_EMBED_ANSWER_A, question.getAnswerA(), false);
+                if(question.isAnswerAvailableB())eb.addField(FIELDNAME_EMBED_ANSWER_B, question.getAnswerB(), false);
+                if(question.isAnswerAvailableC())eb.addField(FIELDNAME_EMBED_ANSWER_C, question.getAnswerC(), false);
+                if(question.isAnswerAvailableD())eb.addField(FIELDNAME_EMBED_ANSWER_D, question.getAnswerD(), false);
+                if(question.isAnswerAvailableE())eb.addField(FIELDNAME_EMBED_ANSWER_E, question.getAnswerE(), false);
 
         // send it into the channel
         return eb.build();

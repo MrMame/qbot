@@ -52,6 +52,23 @@ public class Question {
         return answerE;
     }
 
+    public boolean isAnswerAvailableA(){
+        return !(answerA==null || answerA.isEmpty() || answerA.isBlank());
+    }
+    public boolean isAnswerAvailableB(){
+        return !(answerB==null || answerB.isEmpty() || answerB.isBlank());
+    }
+    public boolean isAnswerAvailableC(){
+        return !(answerC==null || answerC.isEmpty() || answerC.isBlank());
+    }
+    public boolean isAnswerAvailableD(){
+        return !(answerD==null || answerD.isEmpty() || answerD.isBlank());
+    }
+    public boolean isAnswerAvailableE(){
+        return !(answerE==null || answerE.isEmpty() || answerE.isBlank());
+    }
+
+
     protected Question(){}
 
     public Question(String questionText,String answerA,String answerB,String answerC,String answerD,String answerE){
