@@ -18,7 +18,9 @@ import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.hooks.EventListener;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
+import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import net.dv8tion.jda.api.utils.messages.MessageEditBuilder;
 import org.slf4j.Logger;
@@ -28,6 +30,8 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Controller;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -57,6 +61,7 @@ public class DiscordController implements EventListener{
         this.slashCommandsList.add(new QuestionGetUniqueRandomSlashCommand(this::onQuestionGetUniqueRandomSlashCommand));
         this.slashCommandsList.add(new QuestionRemoveAllSlashCommand(this::onQuestionRemoveAllSlashCommand));
         this.slashCommandsList.add(new QuestionRemoveByIdSlashCommand(this::onQuestionRemoveByIdSlashCommand));
+        this.slashCommandsList.add(new QuestionExportAllSlashCommand(this::onQuestionExportAllSlashCommand));
 
 
         // Register all JDA Events and its EventHandlers, used by the DiscordController
@@ -194,6 +199,31 @@ public class DiscordController implements EventListener{
         MessageEmbed emb = QuestionPrinters.createSystemEmbed(retMessage.toString());
 
         event.replyEmbeds(emb)
+                .setEphemeral(true)
+                .queue();
+    }
+    private void onQuestionExportAllSlashCommand(SlashCommandFiredEvent event){
+
+
+        // Export the question db content
+        StringBuilder exportFileContent = new StringBuilder();
+        for(Question q:  questionService.getAllQuestions()){
+            exportFileContent.append("\"" + q.getId() + "\"" + ";");
+            exportFileContent.append("\"" + q.getQuestionText() + "\"" + ";");
+            exportFileContent.append("\"" + q.getAnswerA() + "\"" + ";");
+            exportFileContent.append("\"" + q.getAnswerB() + "\"" + ";");
+            exportFileContent.append("\"" + q.getAnswerC() + "\"" + ";");
+            exportFileContent.append("\"" + q.getAnswerD() + "\"" + ";");
+            exportFileContent.append("\"" + q.getAnswerE() + "\"" + "\r\n");
+        }
+        // Create the message for delivering the export
+        MessageCreateBuilder messageCreateBuilder = new MessageCreateBuilder();
+        messageCreateBuilder.addContent("qBot-Questions exportfile");
+        // Add the exported data to the delivering message
+        InputStream targetStream = new ByteArrayInputStream(exportFileContent.toString().getBytes());
+        messageCreateBuilder.addFiles(FileUpload.fromData(targetStream,"qbot-export.txt"));
+        // Deliver message to discord
+        event.reply(messageCreateBuilder.build())
                 .setEphemeral(true)
                 .queue();
     }
