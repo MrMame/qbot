@@ -255,9 +255,7 @@ public class DiscordController implements EventListener{
         }
     }
 
-    private void addQuestionsToRepository(List<Question> qList) {
-        qList.forEach((question) -> questionService.saveQuestion(question));
-    }
+
 
 
     // =========================== Internal Privates ===============================================================
@@ -353,5 +351,8 @@ public class DiscordController implements EventListener{
         Boolean appendData = event.getOption(QuestionImportAllSlashCommand.COMMAND_OPTION_APPENDDATA_NAME, OptionMapping::getAsBoolean);
         Boolean clearBeforeImport = (appendData==null || appendData==false);
         if(clearBeforeImport){questionService.removeAll();}
+    }
+    private void addQuestionsToRepository(List<Question> qList) {
+        qList.forEach((question) -> questionService.saveQuestion(question));
     }
 }
