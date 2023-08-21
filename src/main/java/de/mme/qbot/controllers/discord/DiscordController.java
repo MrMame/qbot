@@ -22,8 +22,6 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
-import net.dv8tion.jda.api.utils.messages.MessageCreateData;
-import net.dv8tion.jda.api.utils.messages.MessageEditBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +36,6 @@ import java.io.InputStreamReader;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 @Controller
 @PropertySource("classpath:discord.properties")
@@ -235,53 +232,33 @@ public class DiscordController implements EventListener{
     }
     private void onQuestionImportAllSlashCommand(SlashCommandFiredEvent event){
 
-        MessageEmbed retMessageEmb= null;
-
-        // Get the File from property
-        Message.Attachment theAttachment = event.getOptions()
-                .stream()
-                .filter((optMap)->optMap.getName().equals(QuestionImportAllSlashCommand.COMMAND_OPTION_IMPORTFILE_NAME))
-                .findFirst()
-                .get()
-                .getAsAttachment();
-
+        // Default Error message for initialization
+        MessageEmbed retMessageEmb= QuestionPrinters.createErrorEmbed("Error while trying to import questions.");;
         // Read the file content into Question List
         List<Question> qList = new ArrayList<>();
         try {
-            BufferedReader br = new BufferedReader(new InputStreamReader(theAttachment.getProxy().download().get()));
-            br.lines().forEach((line)->{
-                String[] parts = line.split(";");
-                Question newQuestion = new Question(parts[1],parts[2],parts[3],parts[4],parts[5],parts[6]);
-                qList.add(newQuestion);
-            });
-
-            // If user doesn't want to append, clear the database
-            boolean clearBeforeImport = !event.getOption(QuestionImportAllSlashCommand.COMMAND_OPTION_APPENDDATA_NAME, OptionMapping::getAsBoolean);
-            if(clearBeforeImport)
-                questionService.removeAll();
-
-            // Add the Import questin to the Database
-            qList.forEach((question)->{
-                questionService.saveQuestion(question);
-            });
-
+            readQuestionsFromCommandImportfileOption(event, qList);
+            RemoveAllQuestionsFromRepositioryIfNotAppendingOption(event);
+            addQuestionsToRepository(qList);
             retMessageEmb = QuestionPrinters.createSystemEmbed("Question import finished ok.");
-
-        } catch (InterruptedException e) {
-            retMessageEmb = QuestionPrinters.createErrorEmbed("Interrupt Error during Question import!");
-            throw new RuntimeException(e);
-        } catch (ExecutionException e) {
-            retMessageEmb = QuestionPrinters.createErrorEmbed("Execution Error during Question import!");
-            throw new RuntimeException(e);
+        }catch(NoImportFileFoundException e){
+            logger.error(e.toString());
+            retMessageEmb = QuestionPrinters.createErrorEmbed("Importfile was not found.");
+        }catch(ErrorReadingImportFileException e){
+            logger.error(e.toString());
+            retMessageEmb = QuestionPrinters.createErrorEmbed("Error while reading importfile");
+        }finally {
+            // Deliver message to discord-user
+            event.replyEmbeds(retMessageEmb)
+                    .setEphemeral(true)
+                    .queue();
         }
-
-        // Deliver message to discord
-        event.replyEmbeds(retMessageEmb)
-                .setEphemeral(true)
-                .queue();
-
-
     }
+
+    private void addQuestionsToRepository(List<Question> qList) {
+        qList.forEach((question) -> questionService.saveQuestion(question));
+    }
+
 
     // =========================== Internal Privates ===============================================================
     private void sendSlashCommandsToDiscord(JDA jda,List<ISlashCommand> slashCommandsList){
@@ -340,5 +317,41 @@ public class DiscordController implements EventListener{
         return retJda;
     }
 
+    private static void readQuestionsFromCommandImportfileOption(SlashCommandFiredEvent event, List<Question> qList) throws NoImportFileFoundException, ErrorReadingImportFileException {
 
+        Message.Attachment theAttachment;
+        // Get the File from property
+        try{
+            theAttachment = event.getOptions()
+                    .stream()
+                    .filter((optMap)->optMap.getName().equals(QuestionImportAllSlashCommand.COMMAND_OPTION_IMPORTFILE_NAME))
+                    .findFirst()
+                    .get()
+                    .getAsAttachment();
+        }catch(NullPointerException ex){
+            throw new NoImportFileFoundException("Something is wrong with slashcommands option "
+                                                    + QuestionImportAllSlashCommand.COMMAND_OPTION_IMPORTFILE_NAME,
+                                                    ex);
+        }
+
+        // Read each line of the file an add the qestion to the list
+        try{
+            BufferedReader br = new BufferedReader(new InputStreamReader(theAttachment.getProxy().download().get()));
+            br.lines().forEach((line)->{
+                String[] parts = line.split(";");
+                Question newQuestion = new Question(parts[1],parts[2],parts[3],parts[4],parts[5],parts[6]);
+                qList.add(newQuestion);
+            });
+        }catch(InterruptedException | ExecutionException ex) {
+            throw new ErrorReadingImportFileException("Importfile reading thread was interrupted somehow.", ex);
+        }
+
+
+    }
+    private void RemoveAllQuestionsFromRepositioryIfNotAppendingOption(SlashCommandFiredEvent event) {
+        // If user doesn't want to append, clear the database
+        Boolean appendData = event.getOption(QuestionImportAllSlashCommand.COMMAND_OPTION_APPENDDATA_NAME, OptionMapping::getAsBoolean);
+        Boolean clearBeforeImport = (appendData==null || appendData==false);
+        if(clearBeforeImport){questionService.removeAll();}
+    }
 }
