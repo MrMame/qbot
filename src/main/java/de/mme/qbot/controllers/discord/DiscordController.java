@@ -8,6 +8,7 @@ import de.mme.qbot.views.discord.QuestionPrinters;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.GenericEvent;
@@ -30,10 +31,14 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Controller;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 @Controller
 @PropertySource("classpath:discord.properties")
@@ -62,6 +67,7 @@ public class DiscordController implements EventListener{
         this.slashCommandsList.add(new QuestionRemoveAllSlashCommand(this::onQuestionRemoveAllSlashCommand));
         this.slashCommandsList.add(new QuestionRemoveByIdSlashCommand(this::onQuestionRemoveByIdSlashCommand));
         this.slashCommandsList.add(new QuestionExportAllSlashCommand(this::onQuestionExportAllSlashCommand));
+        this.slashCommandsList.add(new QuestionImportAllSlashCommand(this::onQuestionImportAllSlashCommand));
 
 
         // Register all JDA Events and its EventHandlers, used by the DiscordController
@@ -226,6 +232,55 @@ public class DiscordController implements EventListener{
         event.reply(messageCreateBuilder.build())
                 .setEphemeral(true)
                 .queue();
+    }
+    private void onQuestionImportAllSlashCommand(SlashCommandFiredEvent event){
+
+        MessageEmbed retMessageEmb= null;
+
+        // Get the File from property
+        Message.Attachment theAttachment = event.getOptions()
+                .stream()
+                .filter((optMap)->optMap.getName().equals(QuestionImportAllSlashCommand.COMMAND_OPTION_IMPORTFILE_NAME))
+                .findFirst()
+                .get()
+                .getAsAttachment();
+
+        // Read the file content into Question List
+        List<Question> qList = new ArrayList<>();
+        try {
+            BufferedReader br = new BufferedReader(new InputStreamReader(theAttachment.getProxy().download().get()));
+            br.lines().forEach((line)->{
+                String[] parts = line.split(";");
+                Question newQuestion = new Question(parts[1],parts[2],parts[3],parts[4],parts[5],parts[6]);
+                qList.add(newQuestion);
+            });
+
+            // If user doesn't want to append, clear the database
+            boolean clearBeforeImport = !event.getOption(QuestionImportAllSlashCommand.COMMAND_OPTION_APPENDDATA_NAME, OptionMapping::getAsBoolean);
+            if(clearBeforeImport)
+                questionService.removeAll();
+
+            // Add the Import questin to the Database
+            qList.forEach((question)->{
+                questionService.saveQuestion(question);
+            });
+
+            retMessageEmb = QuestionPrinters.createSystemEmbed("Question import finished ok.");
+
+        } catch (InterruptedException e) {
+            retMessageEmb = QuestionPrinters.createErrorEmbed("Interrupt Error during Question import!");
+            throw new RuntimeException(e);
+        } catch (ExecutionException e) {
+            retMessageEmb = QuestionPrinters.createErrorEmbed("Execution Error during Question import!");
+            throw new RuntimeException(e);
+        }
+
+        // Deliver message to discord
+        event.replyEmbeds(retMessageEmb)
+                .setEphemeral(true)
+                .queue();
+
+
     }
 
     // =========================== Internal Privates ===============================================================
