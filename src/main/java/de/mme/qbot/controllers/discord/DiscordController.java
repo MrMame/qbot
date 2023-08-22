@@ -2,6 +2,7 @@ package de.mme.qbot.controllers.discord;
 
 
 import de.mme.qbot.controllers.discord.slashcommands.*;
+import de.mme.qbot.helper.discord.ImportExportFiles;
 import de.mme.qbot.model.domain.Question;
 import de.mme.qbot.services.IQuestionRepoService;
 import de.mme.qbot.services.MaximumQuestionsStoredException;
@@ -220,42 +221,17 @@ public class DiscordController implements EventListener{
     }
     private void onQuestionExportAllSlashCommand(SlashCommandFiredEvent event){
 
+        // Create the Exportfile containing all questions from repo
+        String exportFileContent = ImportExportFiles.createExportFileContent(questionService.getAllQuestions());
 
-        // Export all questions from repository
-
-
-        StringBuilder exportFileContent = new StringBuilder();
-        // -> Export Date
-        exportFileContent.append("# Export DateTime - ");
-        exportFileContent.append(LocalDateTime.now());
-        exportFileContent.append("\r\n");
-
-        // -> Header Row - Apending # marks Comment
-        exportFileContent.append("#");
-        exportFileContent.append("\"id\"" + ";");
-        exportFileContent.append("\"question\"" + ";");
-        exportFileContent.append("\"answer-a\"" + ";");
-        exportFileContent.append("\"answer-b\"" + ";");
-        exportFileContent.append("\"answer-c\"" + ";");
-        exportFileContent.append("\"answer-d\"" + ";");
-        exportFileContent.append("\"answer-e\"" + "\r\n");
-
-        // -> Questions
-        for(Question q:  questionService.getAllQuestions()){
-            exportFileContent.append("\"" + q.getId() + "\"" + ";");
-            exportFileContent.append("\"" + q.getQuestionText() + "\"" + ";");
-            exportFileContent.append("\"" + q.getAnswerA() + "\"" + ";");
-            exportFileContent.append("\"" + q.getAnswerB() + "\"" + ";");
-            exportFileContent.append("\"" + q.getAnswerC() + "\"" + ";");
-            exportFileContent.append("\"" + q.getAnswerD() + "\"" + ";");
-            exportFileContent.append("\"" + q.getAnswerE() + "\"" + "\r\n");
-        }
         // Create the message for delivering the export
         MessageCreateBuilder messageCreateBuilder = new MessageCreateBuilder();
         messageCreateBuilder.addContent("qBot-Questions exportfile");
+
         // Add the exported data to the delivering message
         InputStream targetStream = new ByteArrayInputStream(exportFileContent.toString().getBytes());
         messageCreateBuilder.addFiles(FileUpload.fromData(targetStream,"qbot-export.txt"));
+
         // Deliver message to discord
         event.reply(messageCreateBuilder.build())
                 .setEphemeral(true)
@@ -266,9 +242,8 @@ public class DiscordController implements EventListener{
         // Default Error message for initialization
         MessageEmbed retMessageEmb= QuestionEmbedFactory.createErrorEmbed("Error while trying to import questions.");;
         // Read the file content into Question List
-        List<Question> qList = new ArrayList<>();
         try {
-            readQuestionsFromCommandImportfileOption(event, qList);
+            List<Question> qList = readQuestionsFromCommandImportfileOption(event);
             RemoveAllQuestionsFromRepositioryIfNotAppendingOption(event);
             addQuestionsToRepository(qList);
             retMessageEmb = QuestionEmbedFactory.createSystemEmbed("Question import finished ok.");
@@ -352,38 +327,32 @@ public class DiscordController implements EventListener{
     }
 
 
-    private static void readQuestionsFromCommandImportfileOption(SlashCommandFiredEvent event, List<Question> qList) throws NoImportFileFoundException, ErrorReadingImportFileException {
+    private static List<Question> readQuestionsFromCommandImportfileOption(SlashCommandFiredEvent event) throws NoImportFileFoundException, ErrorReadingImportFileException {
 
-        Message.Attachment theAttachment;
-        // Get the File from property
+        List<Question> retList = new ArrayList<>();
+
         try{
-             theAttachment = event.getOptions()
+            // Download the attached file and create a buffered reader from its content
+            Message.Attachment theAttachment = event.getOptions()
                     .stream()
                     .filter((optMap)->optMap.getName().equals(QuestionImportAllSlashCommand.COMMAND_OPTION_IMPORTFILE_NAME))
                     .findFirst()
                     .get()
                     .getAsAttachment();
+            BufferedReader br = new BufferedReader(new InputStreamReader(theAttachment.getProxy().download().get()));
+
+            // Create List of Questions from the Importfile content
+            retList = ImportExportFiles.ReadQuestionsFromImportfile(br);
+
         }catch(NullPointerException ex){
             throw new NoImportFileFoundException("Something is wrong with slashcommands option "
                     + QuestionImportAllSlashCommand.COMMAND_OPTION_IMPORTFILE_NAME,
                     ex);
-        }
-
-        // Read each line of the file an add the qestion to the list
-        try{
-            BufferedReader br = new BufferedReader(new InputStreamReader(theAttachment.getProxy().download().get()));
-            br.lines()
-                    .map(line->line.trim())                     // Remove Blanks from beginning and end of line
-                    .filter(line->!line.startsWith("#"))        // Skip Comment rows
-                    .forEach((line)->{                          // Each line to question
-                        String[] parts = line.split(";");
-                        Question newQuestion = new Question(parts[1],parts[2],parts[3],parts[4],parts[5],parts[6]);
-                        qList.add(newQuestion);
-                    });
         }catch(InterruptedException | ExecutionException ex) {
             throw new ErrorReadingImportFileException("Importfile reading thread was interrupted somehow.", ex);
         }
 
+        return retList;
 
     }
     private void RemoveAllQuestionsFromRepositioryIfNotAppendingOption(SlashCommandFiredEvent event) {
@@ -394,12 +363,9 @@ public class DiscordController implements EventListener{
     }
     private void addQuestionsToRepository(List<Question> qList)throws MaximumQuestionsStoredException  {
         for (Question question : qList) {
-            accept(question);
+            questionService.saveQuestion(question);
         }
     }
 
 
-    private void accept(Question question) throws MaximumQuestionsStoredException {
-        questionService.saveQuestion(question);
-    }
 }
