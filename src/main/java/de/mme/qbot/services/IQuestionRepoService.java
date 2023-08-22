@@ -4,12 +4,12 @@ import de.mme.qbot.model.domain.Question;
 
 import java.util.Optional;
 
-public interface IQuestionService {
+public interface IQuestionRepoService {
     public Optional<Question> getUniqueRandomQuestion();
 
     public Optional<Question> getQuestionById(long id);
 
-    public Question saveQuestion(Question question);
+    public Question saveQuestion(Question question) throws MaximumQuestionsStoredException;
 
     public Iterable<Question> getAllQuestions();
 

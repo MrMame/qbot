@@ -3,7 +3,9 @@ package de.mme.qbot.controllers.discord;
 
 import de.mme.qbot.controllers.discord.slashcommands.*;
 import de.mme.qbot.model.domain.Question;
-import de.mme.qbot.services.IQuestionService;
+import de.mme.qbot.services.IQuestionRepoService;
+import de.mme.qbot.services.MaximumQuestionsStoredException;
+import de.mme.qbot.services.QuestionRepoService;
 import de.mme.qbot.views.discord.QuestionPrinters;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -33,6 +35,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
@@ -42,7 +45,7 @@ import java.util.function.Consumer;
 public class DiscordController implements EventListener{
 
     JDA jda;
-    IQuestionService questionService;
+    IQuestionRepoService questionService;
     List<ISlashCommand> slashCommandsList;
 
     Map<Object, Consumer<GenericEvent>> listenerHandlersMap = new HashMap<>();
@@ -50,7 +53,7 @@ public class DiscordController implements EventListener{
     static Logger logger = LoggerFactory.getLogger(DiscordController.class);
 
     @Autowired
-    public DiscordController(Environment env, IQuestionService questionService) {
+    public DiscordController(Environment env, IQuestionRepoService questionService) {
         // First create the Discord API Object
         this.jda = createDiscordApiObject(env);
         // Service for Question persitence
@@ -149,23 +152,33 @@ public class DiscordController implements EventListener{
     private void onQuestionAddSlashCommand(SlashCommandFiredEvent event){
         QuestionAddSlashCommand questionAddSlashCommand =  ((QuestionAddSlashCommand) (event.getFiredSlashCommand()));
 
-        Question newQuestion
-                = new Question(event.getOption(questionAddSlashCommand.COMMAND_OPTION_QUESTION_NAME, OptionMapping::getAsString),
-                event.getOption(questionAddSlashCommand.COMMAND_OPTION_ANSWER_A_NAME, OptionMapping::getAsString),
-                event.getOption(questionAddSlashCommand.COMMAND_OPTION_ANSWER_B_NAME, OptionMapping::getAsString),
-                event.getOption(questionAddSlashCommand.COMMAND_OPTION_ANSWER_C_NAME, OptionMapping::getAsString),
-                event.getOption(questionAddSlashCommand.COMMAND_OPTION_ANSWER_D_NAME, OptionMapping::getAsString),
-                event.getOption(questionAddSlashCommand.COMMAND_OPTION_ANSWER_E_NAME, OptionMapping::getAsString)
-        );
+        MessageEmbed emb = QuestionPrinters.createErrorEmbed("Error while adding question");
 
-        Question savedQuestion = this.questionService.saveQuestion(newQuestion);
+        try{
+            Question newQuestion
+                    = new Question(event.getOption(questionAddSlashCommand.COMMAND_OPTION_QUESTION_NAME, OptionMapping::getAsString),
+                    event.getOption(questionAddSlashCommand.COMMAND_OPTION_ANSWER_A_NAME, OptionMapping::getAsString),
+                    event.getOption(questionAddSlashCommand.COMMAND_OPTION_ANSWER_B_NAME, OptionMapping::getAsString),
+                    event.getOption(questionAddSlashCommand.COMMAND_OPTION_ANSWER_C_NAME, OptionMapping::getAsString),
+                    event.getOption(questionAddSlashCommand.COMMAND_OPTION_ANSWER_D_NAME, OptionMapping::getAsString),
+                    event.getOption(questionAddSlashCommand.COMMAND_OPTION_ANSWER_E_NAME, OptionMapping::getAsString)
+            );
 
-        String questionAddReturnMessage;
-        questionAddReturnMessage = (savedQuestion==null)?
-                                        "Error - Couldn't add question!"
-                                        :"OK - Added Question \n" + savedQuestion.toString();
+            Question savedQuestion = this.questionService.saveQuestion(newQuestion);
 
-        MessageEmbed emb = QuestionPrinters.createSystemEmbed(questionAddReturnMessage);
+            String questionAddReturnMessage;
+            questionAddReturnMessage = (savedQuestion==null)?
+                    "Error - Couldn't add question!"
+                    :"OK - Added Question \n" + savedQuestion.toString();
+
+            emb = QuestionPrinters.createSystemEmbed(questionAddReturnMessage);
+
+        }catch(MaximumQuestionsStoredException ex){
+            logger.warn("The maximum number of questions is already stored in repository");
+            emb = QuestionPrinters.createErrorEmbed("The maximum number of questions is already stored.\r\n"
+                                                        + "You have to delete a question before adding a new one.\r\n"
+                                                        + "Maximum number of allowed questions to store is " + QuestionRepoService.MAXIMUM_NUMBERS_OF_QUESTION_ALLOWED);
+        }
 
         event.replyEmbeds(emb)
                 .setEphemeral(true)
@@ -208,8 +221,26 @@ public class DiscordController implements EventListener{
     private void onQuestionExportAllSlashCommand(SlashCommandFiredEvent event){
 
 
-        // Export the question db content
+        // Export all questions from repository
+
+
         StringBuilder exportFileContent = new StringBuilder();
+        // -> Export Date
+        exportFileContent.append("# Export DateTime - ");
+        exportFileContent.append(LocalDateTime.now());
+        exportFileContent.append("\r\n");
+
+        // -> Header Row - Apending # marks Comment
+        exportFileContent.append("#");
+        exportFileContent.append("\"id\"" + ";");
+        exportFileContent.append("\"question\"" + ";");
+        exportFileContent.append("\"answer-a\"" + ";");
+        exportFileContent.append("\"answer-b\"" + ";");
+        exportFileContent.append("\"answer-c\"" + ";");
+        exportFileContent.append("\"answer-d\"" + ";");
+        exportFileContent.append("\"answer-e\"" + "\r\n");
+
+        // -> Questions
         for(Question q:  questionService.getAllQuestions()){
             exportFileContent.append("\"" + q.getId() + "\"" + ";");
             exportFileContent.append("\"" + q.getQuestionText() + "\"" + ";");
@@ -244,6 +275,11 @@ public class DiscordController implements EventListener{
         }catch(NoImportFileFoundException e){
             logger.error(e.toString());
             retMessageEmb = QuestionPrinters.createErrorEmbed("Importfile was not found.");
+        }catch(MaximumQuestionsStoredException e){
+            logger.error(e.toString());
+            retMessageEmb = QuestionPrinters.createErrorEmbed("The maximum number of questions is already stored.\r\n"
+                    + "You have to delete a question before adding a new one.\r\n"
+                    + "The number of allowed questions to store is " + QuestionRepoService.MAXIMUM_NUMBERS_OF_QUESTION_ALLOWED);
         }catch(ErrorReadingImportFileException e){
             logger.error(e.toString());
             retMessageEmb = QuestionPrinters.createErrorEmbed("Error while reading importfile");
@@ -315,12 +351,13 @@ public class DiscordController implements EventListener{
         return retJda;
     }
 
+
     private static void readQuestionsFromCommandImportfileOption(SlashCommandFiredEvent event, List<Question> qList) throws NoImportFileFoundException, ErrorReadingImportFileException {
 
         Message.Attachment theAttachment;
         // Get the File from property
         try{
-            theAttachment = event.getOptions()
+             theAttachment = event.getOptions()
                     .stream()
                     .filter((optMap)->optMap.getName().equals(QuestionImportAllSlashCommand.COMMAND_OPTION_IMPORTFILE_NAME))
                     .findFirst()
@@ -328,18 +365,21 @@ public class DiscordController implements EventListener{
                     .getAsAttachment();
         }catch(NullPointerException ex){
             throw new NoImportFileFoundException("Something is wrong with slashcommands option "
-                                                    + QuestionImportAllSlashCommand.COMMAND_OPTION_IMPORTFILE_NAME,
-                                                    ex);
+                    + QuestionImportAllSlashCommand.COMMAND_OPTION_IMPORTFILE_NAME,
+                    ex);
         }
 
         // Read each line of the file an add the qestion to the list
         try{
             BufferedReader br = new BufferedReader(new InputStreamReader(theAttachment.getProxy().download().get()));
-            br.lines().forEach((line)->{
-                String[] parts = line.split(";");
-                Question newQuestion = new Question(parts[1],parts[2],parts[3],parts[4],parts[5],parts[6]);
-                qList.add(newQuestion);
-            });
+            br.lines()
+                    .map(line->line.trim())                     // Remove Blanks from beginning and end of line
+                    .filter(line->!line.startsWith("#"))        // Skip Comment rows
+                    .forEach((line)->{                          // Each line to question
+                        String[] parts = line.split(";");
+                        Question newQuestion = new Question(parts[1],parts[2],parts[3],parts[4],parts[5],parts[6]);
+                        qList.add(newQuestion);
+                    });
         }catch(InterruptedException | ExecutionException ex) {
             throw new ErrorReadingImportFileException("Importfile reading thread was interrupted somehow.", ex);
         }
@@ -349,10 +389,17 @@ public class DiscordController implements EventListener{
     private void RemoveAllQuestionsFromRepositioryIfNotAppendingOption(SlashCommandFiredEvent event) {
         // If user doesn't want to append, clear the database
         Boolean appendData = event.getOption(QuestionImportAllSlashCommand.COMMAND_OPTION_APPENDDATA_NAME, OptionMapping::getAsBoolean);
-        Boolean clearBeforeImport = (appendData==null || appendData==false);
+        Boolean clearBeforeImport = (appendData!=null && appendData==false);
         if(clearBeforeImport){questionService.removeAll();}
     }
-    private void addQuestionsToRepository(List<Question> qList) {
-        qList.forEach((question) -> questionService.saveQuestion(question));
+    private void addQuestionsToRepository(List<Question> qList)throws MaximumQuestionsStoredException  {
+        for (Question question : qList) {
+            accept(question);
+        }
+    }
+
+
+    private void accept(Question question) throws MaximumQuestionsStoredException {
+        questionService.saveQuestion(question);
     }
 }
