@@ -2,12 +2,16 @@ package de.mme.qbot.controllers.discord;
 
 
 import de.mme.qbot.controllers.discord.slashcommands.*;
+import de.mme.qbot.helper.discord.ImportExportFiles;
 import de.mme.qbot.model.domain.Question;
-import de.mme.qbot.services.IQuestionService;
-import de.mme.qbot.views.discord.QuestionPrinters;
+import de.mme.qbot.services.IQuestionRepoService;
+import de.mme.qbot.services.MaximumQuestionsStoredException;
+import de.mme.qbot.services.QuestionRepoService;
+import de.mme.qbot.helper.discord.QuestionEmbedFactory;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.GenericEvent;
@@ -18,9 +22,9 @@ import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.hooks.EventListener;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
+import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
-import net.dv8tion.jda.api.utils.messages.MessageCreateData;
-import net.dv8tion.jda.api.utils.messages.MessageEditBuilder;
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +32,13 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Controller;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
 @Controller
@@ -36,7 +46,7 @@ import java.util.function.Consumer;
 public class DiscordController implements EventListener{
 
     JDA jda;
-    IQuestionService questionService;
+    IQuestionRepoService questionService;
     List<ISlashCommand> slashCommandsList;
 
     Map<Object, Consumer<GenericEvent>> listenerHandlersMap = new HashMap<>();
@@ -44,7 +54,7 @@ public class DiscordController implements EventListener{
     static Logger logger = LoggerFactory.getLogger(DiscordController.class);
 
     @Autowired
-    public DiscordController(Environment env, IQuestionService questionService) {
+    public DiscordController(Environment env, IQuestionRepoService questionService) {
         // First create the Discord API Object
         this.jda = createDiscordApiObject(env);
         // Service for Question persitence
@@ -57,6 +67,8 @@ public class DiscordController implements EventListener{
         this.slashCommandsList.add(new QuestionGetUniqueRandomSlashCommand(this::onQuestionGetUniqueRandomSlashCommand));
         this.slashCommandsList.add(new QuestionRemoveAllSlashCommand(this::onQuestionRemoveAllSlashCommand));
         this.slashCommandsList.add(new QuestionRemoveByIdSlashCommand(this::onQuestionRemoveByIdSlashCommand));
+        this.slashCommandsList.add(new QuestionExportAllSlashCommand(this::onQuestionExportAllSlashCommand));
+        this.slashCommandsList.add(new QuestionImportAllSlashCommand(this::onQuestionImportAllSlashCommand));
 
 
         // Register all JDA Events and its EventHandlers, used by the DiscordController
@@ -101,7 +113,7 @@ public class DiscordController implements EventListener{
 
         if(allQuestions.isEmpty())allQuestions.append("No questions available.");
 
-        MessageEmbed returnMessage = QuestionPrinters.createSystemEmbed(allQuestions.toString());
+        MessageEmbed returnMessage = QuestionEmbedFactory.createSystemEmbed(allQuestions.toString());
 
         event.replyEmbeds(returnMessage)
                 .setEphemeral(true)
@@ -115,7 +127,7 @@ public class DiscordController implements EventListener{
         boolean hasAnswerA=false;
         try{
             final Question uniqueQuestion =  this.questionService.getUniqueRandomQuestion().get();
-            final MessageEmbed qemb = QuestionPrinters.createNormalEmbed(uniqueQuestion);
+            final MessageEmbed qemb = QuestionEmbedFactory.createNormalEmbed(uniqueQuestion);
 
             event.replyEmbeds(qemb).queue((msg)->{
                     msg.retrieveOriginal().queue((rMsg)->{
@@ -134,30 +146,40 @@ public class DiscordController implements EventListener{
             });
 
         }catch(NoSuchElementException ex){
-            event.replyEmbeds(QuestionPrinters.createErrorEmbed("No question available. Please add some questions first.")).queue();
+            event.replyEmbeds(QuestionEmbedFactory.createErrorEmbed("No question available. Please add some questions first.")).queue();
         }
 
     }
     private void onQuestionAddSlashCommand(SlashCommandFiredEvent event){
         QuestionAddSlashCommand questionAddSlashCommand =  ((QuestionAddSlashCommand) (event.getFiredSlashCommand()));
 
-        Question newQuestion
-                = new Question(event.getOption(questionAddSlashCommand.COMMAND_OPTION_QUESTION_NAME, OptionMapping::getAsString),
-                event.getOption(questionAddSlashCommand.COMMAND_OPTION_ANSWER_A_NAME, OptionMapping::getAsString),
-                event.getOption(questionAddSlashCommand.COMMAND_OPTION_ANSWER_B_NAME, OptionMapping::getAsString),
-                event.getOption(questionAddSlashCommand.COMMAND_OPTION_ANSWER_C_NAME, OptionMapping::getAsString),
-                event.getOption(questionAddSlashCommand.COMMAND_OPTION_ANSWER_D_NAME, OptionMapping::getAsString),
-                event.getOption(questionAddSlashCommand.COMMAND_OPTION_ANSWER_E_NAME, OptionMapping::getAsString)
-        );
+        MessageEmbed emb = QuestionEmbedFactory.createErrorEmbed("Error while adding question");
 
-        Question savedQuestion = this.questionService.saveQuestion(newQuestion);
+        try{
+            Question newQuestion
+                    = new Question(event.getOption(questionAddSlashCommand.COMMAND_OPTION_QUESTION_NAME, OptionMapping::getAsString),
+                    event.getOption(questionAddSlashCommand.COMMAND_OPTION_ANSWER_A_NAME, OptionMapping::getAsString),
+                    event.getOption(questionAddSlashCommand.COMMAND_OPTION_ANSWER_B_NAME, OptionMapping::getAsString),
+                    event.getOption(questionAddSlashCommand.COMMAND_OPTION_ANSWER_C_NAME, OptionMapping::getAsString),
+                    event.getOption(questionAddSlashCommand.COMMAND_OPTION_ANSWER_D_NAME, OptionMapping::getAsString),
+                    event.getOption(questionAddSlashCommand.COMMAND_OPTION_ANSWER_E_NAME, OptionMapping::getAsString)
+            );
 
-        String questionAddReturnMessage;
-        questionAddReturnMessage = (savedQuestion==null)?
-                                        "Error - Couldn't add question!"
-                                        :"OK - Added Question \n" + savedQuestion.toString();
+            Question savedQuestion = this.questionService.saveQuestion(newQuestion);
 
-        MessageEmbed emb = QuestionPrinters.createSystemEmbed(questionAddReturnMessage);
+            String questionAddReturnMessage;
+            questionAddReturnMessage = (savedQuestion==null)?
+                    "Error - Couldn't add question!"
+                    :"OK - Added Question \n" + savedQuestion.toString();
+
+            emb = QuestionEmbedFactory.createSystemEmbed(questionAddReturnMessage);
+
+        }catch(MaximumQuestionsStoredException ex){
+            logger.warn("The maximum number of questions is already stored in repository");
+            emb = QuestionEmbedFactory.createErrorEmbed("The maximum number of questions is already stored.\r\n"
+                                                        + "You have to delete a question before adding a new one.\r\n"
+                                                        + "Maximum number of allowed questions to store is " + QuestionRepoService.MAXIMUM_NUMBERS_OF_QUESTION_ALLOWED);
+        }
 
         event.replyEmbeds(emb)
                 .setEphemeral(true)
@@ -167,7 +189,7 @@ public class DiscordController implements EventListener{
 
         questionService.removeAll();
 
-        MessageEmbed emb = QuestionPrinters.createSystemEmbed("All questions are removed.");
+        MessageEmbed emb = QuestionEmbedFactory.createSystemEmbed("All questions are removed.");
 
         event.replyEmbeds(emb)
                 .setEphemeral(true)
@@ -191,12 +213,76 @@ public class DiscordController implements EventListener{
                     + "\n\n " + targetQuestion.get().toString() );
         }
 
-        MessageEmbed emb = QuestionPrinters.createSystemEmbed(retMessage.toString());
+        MessageEmbed emb = QuestionEmbedFactory.createSystemEmbed(retMessage.toString());
 
         event.replyEmbeds(emb)
                 .setEphemeral(true)
                 .queue();
     }
+    private void onQuestionExportAllSlashCommand(SlashCommandFiredEvent event){
+
+
+        // Default Error message for initialization
+        MessageEmbed messageEmb= QuestionEmbedFactory.createErrorEmbed("Error while trying to export questions.");
+
+        MessageCreateBuilder messageCreateBuilder = new MessageCreateBuilder();
+        try{
+
+            // Create the Exportfile containing all questions from repo
+            String exportFileContent = ImportExportFiles.createExportFileContent(questionService.getAllQuestions());
+
+            // Add the exported data to the delivering message
+            InputStream targetStream = new ByteArrayInputStream(exportFileContent.toString().getBytes());
+
+            // Finish wo errors, so create the sytsem message
+            messageEmb = QuestionEmbedFactory.createSystemEmbed("All questions exported.");
+
+            messageCreateBuilder.addFiles(FileUpload.fromData(targetStream,"qbot-export.txt"));
+            messageCreateBuilder.addEmbeds(messageEmb);
+
+        }catch(Exception ex){
+            logger.error("Error during question export." + ex.toString());
+            messageEmb= QuestionEmbedFactory.createErrorEmbed("Error while trying to export questions.");;
+            messageCreateBuilder.addEmbeds(messageEmb);
+        }
+
+        // Deliver message to discord
+        event.reply(messageCreateBuilder.build())
+                .setEphemeral(true)
+                .queue();
+    }
+    private void onQuestionImportAllSlashCommand(SlashCommandFiredEvent event){
+
+        // Default Error message for initialization
+        MessageEmbed retMessageEmb= QuestionEmbedFactory.createErrorEmbed("Error while trying to import questions.");;
+
+        // Read the file content into Question List
+        try {
+            List<Question> qList = readQuestionsFromCommandImportfileOption(event);
+            RemoveAllQuestionsFromRepositioryIfNotAppendingOption(event);
+            addQuestionsToRepository(qList);
+            retMessageEmb = QuestionEmbedFactory.createSystemEmbed("Question import finished ok.");
+        }catch(NoImportFileFoundException e){
+            logger.error(e.toString());
+            retMessageEmb = QuestionEmbedFactory.createErrorEmbed("Importfile was not found.");
+        }catch(MaximumQuestionsStoredException e){
+            logger.error(e.toString());
+            retMessageEmb = QuestionEmbedFactory.createErrorEmbed("The maximum number of questions is already stored.\r\n"
+                    + "You have to delete a question before adding a new one.\r\n"
+                    + "The number of allowed questions to store is " + QuestionRepoService.MAXIMUM_NUMBERS_OF_QUESTION_ALLOWED);
+        }catch(ErrorReadingImportFileException e){
+            logger.error(e.toString());
+            retMessageEmb = QuestionEmbedFactory.createErrorEmbed("Error while reading importfile");
+        }finally {
+            // Deliver message to discord-user
+            event.replyEmbeds(retMessageEmb)
+                    .setEphemeral(true)
+                    .queue();
+        }
+    }
+
+
+
 
     // =========================== Internal Privates ===============================================================
     private void sendSlashCommandsToDiscord(JDA jda,List<ISlashCommand> slashCommandsList){
@@ -253,6 +339,47 @@ public class DiscordController implements EventListener{
 
 
         return retJda;
+    }
+
+
+    private static List<Question> readQuestionsFromCommandImportfileOption(SlashCommandFiredEvent event) throws NoImportFileFoundException, ErrorReadingImportFileException {
+
+        List<Question> retList = new ArrayList<>();
+
+        try{
+            // Download the attached file and create a buffered reader from its content
+            Message.Attachment theAttachment = event.getOptions()
+                    .stream()
+                    .filter((optMap)->optMap.getName().equals(QuestionImportAllSlashCommand.COMMAND_OPTION_IMPORTFILE_NAME))
+                    .findFirst()
+                    .get()
+                    .getAsAttachment();
+            BufferedReader br = new BufferedReader(new InputStreamReader(theAttachment.getProxy().download().get()));
+
+            // Create List of Questions from the Importfile content
+            retList = ImportExportFiles.ReadQuestionsFromImportfile(br);
+
+        }catch(NullPointerException ex){
+            throw new NoImportFileFoundException("Something is wrong with slashcommands option "
+                    + QuestionImportAllSlashCommand.COMMAND_OPTION_IMPORTFILE_NAME,
+                    ex);
+        }catch(InterruptedException | ExecutionException ex) {
+            throw new ErrorReadingImportFileException("Importfile reading thread was interrupted somehow.", ex);
+        }
+
+        return retList;
+
+    }
+    private void RemoveAllQuestionsFromRepositioryIfNotAppendingOption(SlashCommandFiredEvent event) {
+        // If user doesn't want to append, clear the database
+        Boolean appendData = event.getOption(QuestionImportAllSlashCommand.COMMAND_OPTION_APPENDDATA_NAME, OptionMapping::getAsBoolean);
+        Boolean clearBeforeImport = (appendData!=null && appendData==false);
+        if(clearBeforeImport){questionService.removeAll();}
+    }
+    private void addQuestionsToRepository(List<Question> qList)throws MaximumQuestionsStoredException  {
+        for (Question question : qList) {
+            questionService.saveQuestion(question);
+        }
     }
 
 

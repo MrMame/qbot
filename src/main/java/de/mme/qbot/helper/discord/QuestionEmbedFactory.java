@@ -1,4 +1,4 @@
-package de.mme.qbot.views.discord;
+package de.mme.qbot.helper.discord;
 
 import de.mme.qbot.model.domain.Question;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -7,7 +7,7 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import java.awt.*;
 
 
-public class QuestionPrinters {
+public class QuestionEmbedFactory {
 
     public static final String FIELDNAME_EMBED_ANSWER_A = "A";
     public static final String FIELDNAME_EMBED_ANSWER_B = "B";

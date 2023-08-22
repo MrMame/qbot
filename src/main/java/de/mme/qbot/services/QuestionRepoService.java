@@ -11,14 +11,15 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class QuestionService implements IQuestionService{
+public class QuestionRepoService implements IQuestionRepoService {
 
+    public static final int MAXIMUM_NUMBERS_OF_QUESTION_ALLOWED = 500;
     IQuestionRepository repository;
 
     List<Question> alreadyGottenQuestion = new ArrayList<>();
 
     @Autowired
-    public QuestionService(IQuestionRepository repository) {
+    public QuestionRepoService(IQuestionRepository repository) {
         this.repository = repository;
     }
 
@@ -54,7 +55,8 @@ public class QuestionService implements IQuestionService{
     }
 
     @Override
-    public Question saveQuestion(Question question) {
+    public Question saveQuestion(Question question) throws MaximumQuestionsStoredException {
+        if(repository.count() >= MAXIMUM_NUMBERS_OF_QUESTION_ALLOWED) throw new MaximumQuestionsStoredException();
         return repository.save(question);
     }
 
