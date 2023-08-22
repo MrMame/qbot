@@ -7,7 +7,7 @@ import de.mme.qbot.model.domain.Question;
 import de.mme.qbot.services.IQuestionRepoService;
 import de.mme.qbot.services.MaximumQuestionsStoredException;
 import de.mme.qbot.services.QuestionRepoService;
-import de.mme.qbot.helper.discord.embeds.QuestionEmbedFactory;
+import de.mme.qbot.helper.discord.QuestionEmbedFactory;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;

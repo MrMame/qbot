@@ -1,4 +1,4 @@
-package de.mme.qbot.helper.discord.embeds;
+package de.mme.qbot.helper.discord;
 
 import de.mme.qbot.model.domain.Question;
 import net.dv8tion.jda.api.EmbedBuilder;
