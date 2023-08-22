@@ -6,7 +6,7 @@ import de.mme.qbot.model.domain.Question;
 import de.mme.qbot.services.IQuestionRepoService;
 import de.mme.qbot.services.MaximumQuestionsStoredException;
 import de.mme.qbot.services.QuestionRepoService;
-import de.mme.qbot.views.discord.QuestionPrinters;
+import de.mme.qbot.helper.discord.embeds.QuestionEmbedFactory;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
@@ -112,7 +112,7 @@ public class DiscordController implements EventListener{
 
         if(allQuestions.isEmpty())allQuestions.append("No questions available.");
 
-        MessageEmbed returnMessage = QuestionPrinters.createSystemEmbed(allQuestions.toString());
+        MessageEmbed returnMessage = QuestionEmbedFactory.createSystemEmbed(allQuestions.toString());
 
         event.replyEmbeds(returnMessage)
                 .setEphemeral(true)
@@ -126,7 +126,7 @@ public class DiscordController implements EventListener{
         boolean hasAnswerA=false;
         try{
             final Question uniqueQuestion =  this.questionService.getUniqueRandomQuestion().get();
-            final MessageEmbed qemb = QuestionPrinters.createNormalEmbed(uniqueQuestion);
+            final MessageEmbed qemb = QuestionEmbedFactory.createNormalEmbed(uniqueQuestion);
 
             event.replyEmbeds(qemb).queue((msg)->{
                     msg.retrieveOriginal().queue((rMsg)->{
@@ -145,14 +145,14 @@ public class DiscordController implements EventListener{
             });
 
         }catch(NoSuchElementException ex){
-            event.replyEmbeds(QuestionPrinters.createErrorEmbed("No question available. Please add some questions first.")).queue();
+            event.replyEmbeds(QuestionEmbedFactory.createErrorEmbed("No question available. Please add some questions first.")).queue();
         }
 
     }
     private void onQuestionAddSlashCommand(SlashCommandFiredEvent event){
         QuestionAddSlashCommand questionAddSlashCommand =  ((QuestionAddSlashCommand) (event.getFiredSlashCommand()));
 
-        MessageEmbed emb = QuestionPrinters.createErrorEmbed("Error while adding question");
+        MessageEmbed emb = QuestionEmbedFactory.createErrorEmbed("Error while adding question");
 
         try{
             Question newQuestion
@@ -171,11 +171,11 @@ public class DiscordController implements EventListener{
                     "Error - Couldn't add question!"
                     :"OK - Added Question \n" + savedQuestion.toString();
 
-            emb = QuestionPrinters.createSystemEmbed(questionAddReturnMessage);
+            emb = QuestionEmbedFactory.createSystemEmbed(questionAddReturnMessage);
 
         }catch(MaximumQuestionsStoredException ex){
             logger.warn("The maximum number of questions is already stored in repository");
-            emb = QuestionPrinters.createErrorEmbed("The maximum number of questions is already stored.\r\n"
+            emb = QuestionEmbedFactory.createErrorEmbed("The maximum number of questions is already stored.\r\n"
                                                         + "You have to delete a question before adding a new one.\r\n"
                                                         + "Maximum number of allowed questions to store is " + QuestionRepoService.MAXIMUM_NUMBERS_OF_QUESTION_ALLOWED);
         }
@@ -188,7 +188,7 @@ public class DiscordController implements EventListener{
 
         questionService.removeAll();
 
-        MessageEmbed emb = QuestionPrinters.createSystemEmbed("All questions are removed.");
+        MessageEmbed emb = QuestionEmbedFactory.createSystemEmbed("All questions are removed.");
 
         event.replyEmbeds(emb)
                 .setEphemeral(true)
@@ -212,7 +212,7 @@ public class DiscordController implements EventListener{
                     + "\n\n " + targetQuestion.get().toString() );
         }
 
-        MessageEmbed emb = QuestionPrinters.createSystemEmbed(retMessage.toString());
+        MessageEmbed emb = QuestionEmbedFactory.createSystemEmbed(retMessage.toString());
 
         event.replyEmbeds(emb)
                 .setEphemeral(true)
@@ -264,25 +264,25 @@ public class DiscordController implements EventListener{
     private void onQuestionImportAllSlashCommand(SlashCommandFiredEvent event){
 
         // Default Error message for initialization
-        MessageEmbed retMessageEmb= QuestionPrinters.createErrorEmbed("Error while trying to import questions.");;
+        MessageEmbed retMessageEmb= QuestionEmbedFactory.createErrorEmbed("Error while trying to import questions.");;
         // Read the file content into Question List
         List<Question> qList = new ArrayList<>();
         try {
             readQuestionsFromCommandImportfileOption(event, qList);
             RemoveAllQuestionsFromRepositioryIfNotAppendingOption(event);
             addQuestionsToRepository(qList);
-            retMessageEmb = QuestionPrinters.createSystemEmbed("Question import finished ok.");
+            retMessageEmb = QuestionEmbedFactory.createSystemEmbed("Question import finished ok.");
         }catch(NoImportFileFoundException e){
             logger.error(e.toString());
-            retMessageEmb = QuestionPrinters.createErrorEmbed("Importfile was not found.");
+            retMessageEmb = QuestionEmbedFactory.createErrorEmbed("Importfile was not found.");
         }catch(MaximumQuestionsStoredException e){
             logger.error(e.toString());
-            retMessageEmb = QuestionPrinters.createErrorEmbed("The maximum number of questions is already stored.\r\n"
+            retMessageEmb = QuestionEmbedFactory.createErrorEmbed("The maximum number of questions is already stored.\r\n"
                     + "You have to delete a question before adding a new one.\r\n"
                     + "The number of allowed questions to store is " + QuestionRepoService.MAXIMUM_NUMBERS_OF_QUESTION_ALLOWED);
         }catch(ErrorReadingImportFileException e){
             logger.error(e.toString());
-            retMessageEmb = QuestionPrinters.createErrorEmbed("Error while reading importfile");
+            retMessageEmb = QuestionEmbedFactory.createErrorEmbed("Error while reading importfile");
         }finally {
             // Deliver message to discord-user
             event.replyEmbeds(retMessageEmb)
