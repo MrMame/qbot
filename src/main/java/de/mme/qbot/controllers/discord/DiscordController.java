@@ -221,16 +221,30 @@ public class DiscordController implements EventListener{
     }
     private void onQuestionExportAllSlashCommand(SlashCommandFiredEvent event){
 
-        // Create the Exportfile containing all questions from repo
-        String exportFileContent = ImportExportFiles.createExportFileContent(questionService.getAllQuestions());
 
-        // Create the message for delivering the export
+        // Default Error message for initialization
+        MessageEmbed messageEmb= QuestionEmbedFactory.createErrorEmbed("Error while trying to export questions.");
+
         MessageCreateBuilder messageCreateBuilder = new MessageCreateBuilder();
-        messageCreateBuilder.addContent("qBot-Questions exportfile");
+        try{
 
-        // Add the exported data to the delivering message
-        InputStream targetStream = new ByteArrayInputStream(exportFileContent.toString().getBytes());
-        messageCreateBuilder.addFiles(FileUpload.fromData(targetStream,"qbot-export.txt"));
+            // Create the Exportfile containing all questions from repo
+            String exportFileContent = ImportExportFiles.createExportFileContent(questionService.getAllQuestions());
+
+            // Add the exported data to the delivering message
+            InputStream targetStream = new ByteArrayInputStream(exportFileContent.toString().getBytes());
+
+            // Finish wo errors, so create the sytsem message
+            messageEmb = QuestionEmbedFactory.createSystemEmbed("All questions exported.");
+
+            messageCreateBuilder.addFiles(FileUpload.fromData(targetStream,"qbot-export.txt"));
+            messageCreateBuilder.addEmbeds(messageEmb);
+
+        }catch(Exception ex){
+            logger.error("Error during question export." + ex.toString());
+            messageEmb= QuestionEmbedFactory.createErrorEmbed("Error while trying to export questions.");;
+            messageCreateBuilder.addEmbeds(messageEmb);
+        }
 
         // Deliver message to discord
         event.reply(messageCreateBuilder.build())
@@ -241,6 +255,7 @@ public class DiscordController implements EventListener{
 
         // Default Error message for initialization
         MessageEmbed retMessageEmb= QuestionEmbedFactory.createErrorEmbed("Error while trying to import questions.");;
+
         // Read the file content into Question List
         try {
             List<Question> qList = readQuestionsFromCommandImportfileOption(event);
