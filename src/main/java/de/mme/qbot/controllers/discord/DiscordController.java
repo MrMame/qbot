@@ -336,7 +336,7 @@ public class DiscordController implements EventListener{
         // Enable the bulk delete event
         builder.setBulkDeleteSplittingEnabled(false);
         // Set activity (like "playing Something")
-        builder.setActivity(Activity.watching("ExampleJDA running"));
+        builder.setActivity(Activity.playing("qBot at your service"));
 
         // Add Event Listeners ==============================================
         builder.addEventListeners(this);
@@ -397,8 +397,6 @@ public class DiscordController implements EventListener{
             questionService.saveQuestion(question);
         }
     }
-
-
     private boolean isGuildAllowed(SlashCommandInteractionEvent event){
         Boolean retBool = false;
         if(event.isFromGuild()){
