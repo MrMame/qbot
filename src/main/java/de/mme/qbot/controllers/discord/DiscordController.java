@@ -358,7 +358,7 @@ public class DiscordController implements EventListener{
     }
 
 
-    private static List<Question> readQuestionsFromCommandImportfileOption(SlashCommandFiredEvent event) throws NoImportFileFoundException, ErrorReadingImportFileException {
+    private static List<Question> readQuestionsFromCommandImportfileOption(SlashCommandFiredEvent event) throws NoImportFileFoundException, ErrorReadingImportFileException ,NoImportFileFoundException{
 
         List<Question> retList = new ArrayList<>();
 
@@ -375,6 +375,10 @@ public class DiscordController implements EventListener{
             // Create List of Questions from the Importfile content
             retList = ImportExportFiles.ReadQuestionsFromImportfile(br);
 
+        }catch(NoSuchElementException ex){
+            throw new NoImportFileFoundException("No File was found with given importfile name. "
+                    + QuestionImportAllSlashCommand.COMMAND_OPTION_IMPORTFILE_NAME,
+                    ex);
         }catch(NullPointerException ex){
             throw new NoImportFileFoundException("Something is wrong with slashcommands option "
                     + QuestionImportAllSlashCommand.COMMAND_OPTION_IMPORTFILE_NAME,
