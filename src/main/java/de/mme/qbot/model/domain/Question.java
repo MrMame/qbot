@@ -15,12 +15,12 @@ public class Question {
     @GeneratedValue(strategy= GenerationType.AUTO)
     private Long id;
 
-    private String questionText="";
-    private String answerA="";
-    private String answerB="";
-    private String answerC="";
-    private String answerD="";
-    private String answerE="";
+    private String questionText=null;
+    private String answerA=null;
+    private String answerB=null;
+    private String answerC=null;
+    private String answerD=null;
+    private String answerE=null;
 
 
     public Long getId() {

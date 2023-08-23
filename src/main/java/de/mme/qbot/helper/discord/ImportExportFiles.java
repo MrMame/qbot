@@ -32,6 +32,13 @@ public class ImportExportFiles {
                 .filter(line->!line.startsWith(COMMENT_CHARACTER))        // Skip Comment rows
                 .forEach((line)->{                          // Each line to question
                     String[] parts = line.split(SEPERATOR);
+                    parts[1] = parts[1].substring(1,parts[1].length()-1);
+                    parts[2] = (parts[2].equals("null")) ? parts[2]=null : parts[2].substring(1,parts[2].length()-1);
+                    parts[3] = (parts[3].equals("null")) ? parts[3]=null : parts[3].substring(1,parts[3].length()-1);
+                    parts[4] = (parts[4].equals("null")) ? parts[4]=null : parts[4].substring(1,parts[4].length()-1);
+                    parts[5] = (parts[5].equals("null")) ? parts[5]=null : parts[5].substring(1,parts[5].length()-1);
+                    parts[6] = (parts[6].equals("null")) ? parts[6]=null : parts[6].substring(1,parts[6].length()-1);
+
                     Question newQuestion = new Question(parts[1],parts[2],parts[3],parts[4],parts[5],parts[6]);
                     retList.add(newQuestion);
                 });
@@ -53,23 +60,33 @@ public class ImportExportFiles {
 
         // -> Header Row - Apending # marks Comment
         exportFileContent.append(COMMENT_CHARACTER);
-        exportFileContent.append("\"" + CSV_HEADERNAME_ID + "\"" + SEPERATOR);
-        exportFileContent.append("\"" + CSV_HEADERNAME_QUESTION + "\"" + SEPERATOR);
-        exportFileContent.append("\"" + CSV_HEADERNAME_ANSWER_A + "\"" + SEPERATOR);
-        exportFileContent.append("\"" + CSV_HEADERNAME_ANSWER_B + "\"" + SEPERATOR);
-        exportFileContent.append("\"" + CSV_HEADERNAME_ANSWER_C + "\"" + SEPERATOR);
-        exportFileContent.append("\"" + CSV_HEADERNAME_ANSWER_D + "\"" + SEPERATOR);
-        exportFileContent.append("\"" + CSV_HEADERNAME_ANSWER_E + "\"" + NEWLINE_CHARACTERS);
+        exportFileContent.append(CSV_HEADERNAME_ID + SEPERATOR);
+        exportFileContent.append(CSV_HEADERNAME_QUESTION + SEPERATOR);
+        exportFileContent.append(CSV_HEADERNAME_ANSWER_A + SEPERATOR);
+        exportFileContent.append(CSV_HEADERNAME_ANSWER_B + SEPERATOR);
+        exportFileContent.append(CSV_HEADERNAME_ANSWER_C + SEPERATOR);
+        exportFileContent.append(CSV_HEADERNAME_ANSWER_D + SEPERATOR);
+        exportFileContent.append(CSV_HEADERNAME_ANSWER_E + NEWLINE_CHARACTERS);
 
         // -> Questions
         for(Question q:  questions){
-            exportFileContent.append("\"" + q.getId() + "\"" + SEPERATOR);
-            exportFileContent.append("\"" + q.getQuestionText() + "\"" + SEPERATOR);
-            exportFileContent.append("\"" + q.getAnswerA() + "\"" + SEPERATOR);
-            exportFileContent.append("\"" + q.getAnswerB() + "\"" + SEPERATOR);
-            exportFileContent.append("\"" + q.getAnswerC() + "\"" + SEPERATOR);
-            exportFileContent.append("\"" + q.getAnswerD() + "\"" + SEPERATOR);
-            exportFileContent.append("\"" + q.getAnswerE() + "\"" + NEWLINE_CHARACTERS);
+
+            String qField = "\"" + q.getId() + "\"";
+            String qText = (q.getQuestionText()!=null) ? "\""+q.getQuestionText()+"\"" : "null";
+            String qAnswerA = (q.getAnswerA()!=null) ? "\""+q.getAnswerA()+"\"" : "null";
+            String qAnswerB = (q.getAnswerB()!=null) ? "\""+q.getAnswerB()+"\"" : "null";
+            String qAnswerC = (q.getAnswerC()!=null) ? "\""+q.getAnswerC()+"\"" : "null";
+            String qAnswerD = (q.getAnswerD()!=null) ? "\""+q.getAnswerD()+"\"" : "null";
+            String qAnswerE = (q.getAnswerE()!=null) ? "\""+q.getAnswerE()+"\"" : "null";
+
+
+            exportFileContent.append(qField + SEPERATOR);
+            exportFileContent.append(qText + SEPERATOR);
+            exportFileContent.append(qAnswerA + SEPERATOR);
+            exportFileContent.append(qAnswerB + SEPERATOR);
+            exportFileContent.append(qAnswerC + SEPERATOR);
+            exportFileContent.append(qAnswerD + SEPERATOR);
+            exportFileContent.append(qAnswerE + NEWLINE_CHARACTERS);
         }
 
         return exportFileContent.toString();
