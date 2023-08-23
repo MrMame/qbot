@@ -48,6 +48,7 @@ public class DiscordController implements EventListener{
     JDA jda;
     IQuestionRepoService questionService;
     List<ISlashCommand> slashCommandsList;
+    Environment env;
 
     Map<Object, Consumer<GenericEvent>> listenerHandlersMap = new HashMap<>();
 
@@ -55,6 +56,7 @@ public class DiscordController implements EventListener{
 
     @Autowired
     public DiscordController(Environment env, IQuestionRepoService questionService) {
+        this.env = env;
         // First create the Discord API Object
         this.jda = createDiscordApiObject(env);
         // Service for Question persitence
@@ -295,10 +297,24 @@ public class DiscordController implements EventListener{
     }
     private void onSlashCommandReceivedEvent(GenericEvent genericEvent){
         SlashCommandInteractionEvent event = (SlashCommandInteractionEvent) genericEvent;
-        slashCommandsList.stream()
-                .filter(ISlashCommand -> {return ISlashCommand.getCommandData().getName().equals(event.getName());})
-                .forEach(ISlashCommand -> {
-                    ISlashCommand.getCommandHandler().accept(new SlashCommandFiredEvent(ISlashCommand,event));});
+
+        if(isGuildAllowed(event)==false){
+            MessageEmbed errEmb = QuestionEmbedFactory.createErrorEmbed("Sorry. Your Server is not allowed to use this Bot.");
+            // Deliver message to discord-user
+            event.replyEmbeds(errEmb)
+                    .setEphemeral(true)
+                    .queue();
+        }else {
+
+            slashCommandsList.stream()
+                    .filter(ISlashCommand -> {
+                        return ISlashCommand.getCommandData().getName().equals(event.getName());
+                    })
+                    .forEach(ISlashCommand -> {
+                        ISlashCommand.getCommandHandler().accept(new SlashCommandFiredEvent(ISlashCommand, event));
+                    });
+        }
+
     }
     @Override
     public void onEvent(GenericEvent genericEvent) {
@@ -320,7 +336,7 @@ public class DiscordController implements EventListener{
         // Enable the bulk delete event
         builder.setBulkDeleteSplittingEnabled(false);
         // Set activity (like "playing Something")
-        builder.setActivity(Activity.watching("ExampleJDA running"));
+        builder.setActivity(Activity.playing("qBot at your service"));
 
         // Add Event Listeners ==============================================
         builder.addEventListeners(this);
@@ -380,6 +396,14 @@ public class DiscordController implements EventListener{
         for (Question question : qList) {
             questionService.saveQuestion(question);
         }
+    }
+    private boolean isGuildAllowed(SlashCommandInteractionEvent event){
+        Boolean retBool = false;
+        if(event.isFromGuild()){
+            String[] allowedIds = env.getProperty("settings.discord.allowedguild").split("#");
+            retBool = Arrays.stream(allowedIds).anyMatch(id->id.equals(event.getGuild().getId()));
+        }
+        return retBool;
     }
 
 
