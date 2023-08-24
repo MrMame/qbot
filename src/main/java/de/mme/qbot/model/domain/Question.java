@@ -1,9 +1,6 @@
 package de.mme.qbot.model.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import jdk.jfr.DataAmount;
 
 import java.util.Objects;
@@ -15,11 +12,17 @@ public class Question {
     @GeneratedValue(strategy= GenerationType.AUTO)
     private Long id;
 
+    @Column(length=6000)
     private String questionText=null;
+    @Column(length=6000)
     private String answerA=null;
+    @Column(length=6000)
     private String answerB=null;
+    @Column(length=6000)
     private String answerC=null;
+    @Column(length=6000)
     private String answerD=null;
+    @Column(length=6000)
     private String answerE=null;
 
 
