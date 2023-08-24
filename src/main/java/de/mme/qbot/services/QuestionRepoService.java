@@ -55,8 +55,15 @@ public class QuestionRepoService implements IQuestionRepoService {
     }
 
     @Override
-    public Question saveQuestion(Question question) throws MaximumQuestionsStoredException {
+    public Question saveQuestion(Question question) throws MaximumQuestionsStoredException, TextIsTooLongException {
         if(repository.count() >= MAXIMUM_NUMBERS_OF_QUESTION_ALLOWED) throw new MaximumQuestionsStoredException();
+        if(question.getQuestionText().length()> MAXIMUM_QUESTION_TEXT_LENGTH) throw new TextIsTooLongException("Text of question is too long. Maximum is " + MAXIMUM_QUESTION_TEXT_LENGTH + " characters.");
+        if(question.isAnswerAvailableA() && question.getAnswerA().length()> MAXIMUM_ANSWER_TEXT_LENGTH) throw new TextIsTooLongException("Text of Answer A is too long. Maximum characters allowed is " + MAXIMUM_ANSWER_TEXT_LENGTH);
+        if(question.isAnswerAvailableB() && question.getAnswerB().length()> MAXIMUM_ANSWER_TEXT_LENGTH) throw new TextIsTooLongException("Text of Answer B is too long. Maximum characters allowed is " + MAXIMUM_ANSWER_TEXT_LENGTH);
+        if(question.isAnswerAvailableC() && question.getAnswerC().length()> MAXIMUM_ANSWER_TEXT_LENGTH) throw new TextIsTooLongException("Text of Answer C is too long. Maximum characters allowed is " + MAXIMUM_ANSWER_TEXT_LENGTH);
+        if(question.isAnswerAvailableD() && question.getAnswerD().length()> MAXIMUM_ANSWER_TEXT_LENGTH) throw new TextIsTooLongException("Text of Answer D is too long. Maximum characters allowed is " + MAXIMUM_ANSWER_TEXT_LENGTH);
+        if(question.isAnswerAvailableE() && question.getAnswerE().length()> MAXIMUM_ANSWER_TEXT_LENGTH) throw new TextIsTooLongException("Text of Answer E is too long. Maximum characters allowed is " + MAXIMUM_ANSWER_TEXT_LENGTH);
+
         return repository.save(question);
     }
 

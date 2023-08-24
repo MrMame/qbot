@@ -8,6 +8,7 @@ import de.mme.qbot.services.IQuestionRepoService;
 import de.mme.qbot.services.MaximumQuestionsStoredException;
 import de.mme.qbot.services.QuestionRepoService;
 import de.mme.qbot.helper.discord.QuestionEmbedFactory;
+import de.mme.qbot.services.TextIsTooLongException;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
@@ -36,7 +37,6 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
@@ -65,7 +65,7 @@ public class DiscordController implements EventListener{
         // Register all used SlashCommands and its EventHandlers, used by the DiscordController
         this.slashCommandsList = new ArrayList<>();
         this.slashCommandsList.add(new QuestionAddSlashCommand(this::onQuestionAddSlashCommand));
-        this.slashCommandsList.add(new QuestionGetAllSlashCommand(this::onQuestionGetAllSlashCommand));
+        //this.slashCommandsList.add(new QuestionGetAllSlashCommand(this::onQuestionGetAllSlashCommand));
         this.slashCommandsList.add(new QuestionGetUniqueRandomSlashCommand(this::onQuestionGetUniqueRandomSlashCommand));
         this.slashCommandsList.add(new QuestionRemoveAllSlashCommand(this::onQuestionRemoveAllSlashCommand));
         this.slashCommandsList.add(new QuestionRemoveByIdSlashCommand(this::onQuestionRemoveByIdSlashCommand));
@@ -177,10 +177,14 @@ public class DiscordController implements EventListener{
             emb = QuestionEmbedFactory.createSystemEmbed(questionAddReturnMessage);
 
         }catch(MaximumQuestionsStoredException ex){
-            logger.warn("The maximum number of questions is already stored in repository");
+            logger.error("The maximum number of questions is already stored in repository");
             emb = QuestionEmbedFactory.createErrorEmbed("The maximum number of questions is already stored.\r\n"
                                                         + "You have to delete a question before adding a new one.\r\n"
                                                         + "Maximum number of allowed questions to store is " + QuestionRepoService.MAXIMUM_NUMBERS_OF_QUESTION_ALLOWED);
+        }catch(TextIsTooLongException ex){
+            logger.error("User was trying to store a question with a field (question/answer) containing more characters than allowed.");
+            emb = QuestionEmbedFactory.createErrorEmbed("Shorten your text first before trying to add the question again.\r\n"
+                    + ex.getMessage());
         }
 
         event.replyEmbeds(emb)
@@ -267,11 +271,15 @@ public class DiscordController implements EventListener{
         }catch(NoImportFileFoundException e){
             logger.error(e.toString());
             retMessageEmb = QuestionEmbedFactory.createErrorEmbed("Importfile was not found.");
-        }catch(MaximumQuestionsStoredException e){
+        }catch(MaximumQuestionsStoredException e) {
             logger.error(e.toString());
             retMessageEmb = QuestionEmbedFactory.createErrorEmbed("The maximum number of questions is already stored.\r\n"
                     + "You have to delete a question before adding a new one.\r\n"
                     + "The number of allowed questions to store is " + QuestionRepoService.MAXIMUM_NUMBERS_OF_QUESTION_ALLOWED);
+        }catch(TextIsTooLongException ex){
+            logger.error("User was trying to store a question with a field (question/answer) containing more characters than allowed.");
+            retMessageEmb = QuestionEmbedFactory.createErrorEmbed("Shorten your text first before trying to add the question again.\r\n"
+                    + ex.getMessage());
         }catch(ErrorReadingImportFileException e){
             logger.error(e.toString());
             retMessageEmb = QuestionEmbedFactory.createErrorEmbed("Error while reading importfile");
@@ -396,7 +404,7 @@ public class DiscordController implements EventListener{
         Boolean clearBeforeImport = (appendData!=null && appendData==false);
         if(clearBeforeImport){questionService.removeAll();}
     }
-    private void addQuestionsToRepository(List<Question> qList)throws MaximumQuestionsStoredException  {
+    private void addQuestionsToRepository(List<Question> qList)throws MaximumQuestionsStoredException, TextIsTooLongException  {
         for (Question question : qList) {
             questionService.saveQuestion(question);
         }

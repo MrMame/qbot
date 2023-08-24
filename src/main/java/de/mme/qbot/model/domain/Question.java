@@ -1,9 +1,7 @@
 package de.mme.qbot.model.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import de.mme.qbot.services.TextIsTooLongException;
+import jakarta.persistence.*;
 import jdk.jfr.DataAmount;
 
 import java.util.Objects;
@@ -15,12 +13,18 @@ public class Question {
     @GeneratedValue(strategy= GenerationType.AUTO)
     private Long id;
 
-    private String questionText=null;
-    private String answerA=null;
-    private String answerB=null;
-    private String answerC=null;
-    private String answerD=null;
-    private String answerE=null;
+    @Column(length=1000)
+    private String questionText="";
+    @Column(length=1000)
+    private String answerA="";
+    @Column(length=1000)
+    private String answerB="";
+    @Column(length=1000)
+    private String answerC="";
+    @Column(length=1000)
+    private String answerD="";
+    @Column(length=1000)
+    private String answerE="";
 
 
     public Long getId() {
@@ -79,6 +83,25 @@ public class Question {
         this.answerD = answerD;
         this.answerE = answerE;
     }
+
+//    public Integer calcCompleteLengthOfWholeQuestionsText(){
+//        Integer completeLength = 0;
+//
+//        completeLength += getQuestionText().length();
+//        if(isAnswerAvailableA())
+//            completeLength += getAnswerA().length();
+//        if(isAnswerAvailableB())
+//            completeLength += getAnswerB().length();
+//        if(isAnswerAvailableC())
+//            completeLength += getAnswerC().length();
+//        if(isAnswerAvailableD())
+//            completeLength += getAnswerD().length();
+//        if(isAnswerAvailableE())
+//            completeLength += getAnswerE().length();
+//
+//        return completeLength;
+//
+//    }
 
     @Override
     public String toString() {
