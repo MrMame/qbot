@@ -37,7 +37,6 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
@@ -66,7 +65,7 @@ public class DiscordController implements EventListener{
         // Register all used SlashCommands and its EventHandlers, used by the DiscordController
         this.slashCommandsList = new ArrayList<>();
         this.slashCommandsList.add(new QuestionAddSlashCommand(this::onQuestionAddSlashCommand));
-        this.slashCommandsList.add(new QuestionGetAllSlashCommand(this::onQuestionGetAllSlashCommand));
+        //this.slashCommandsList.add(new QuestionGetAllSlashCommand(this::onQuestionGetAllSlashCommand));
         this.slashCommandsList.add(new QuestionGetUniqueRandomSlashCommand(this::onQuestionGetUniqueRandomSlashCommand));
         this.slashCommandsList.add(new QuestionRemoveAllSlashCommand(this::onQuestionRemoveAllSlashCommand));
         this.slashCommandsList.add(new QuestionRemoveByIdSlashCommand(this::onQuestionRemoveByIdSlashCommand));
@@ -183,9 +182,8 @@ public class DiscordController implements EventListener{
                                                         + "You have to delete a question before adding a new one.\r\n"
                                                         + "Maximum number of allowed questions to store is " + QuestionRepoService.MAXIMUM_NUMBERS_OF_QUESTION_ALLOWED);
         }catch(TextIsTooLongException ex){
-            logger.error("User was trying to store a question with a textfield length greater than 6000 characters.");
-            emb = QuestionEmbedFactory.createErrorEmbed("The maximum length of a single question or answer is 6000 characters.\r\n"
-                    + "Shorten your text before trying to add the question again.\r\n"
+            logger.error("User was trying to store a question with a field (question/answer) containing more characters than allowed.");
+            emb = QuestionEmbedFactory.createErrorEmbed("Shorten your text first before trying to add the question again.\r\n"
                     + ex.getMessage());
         }
 
@@ -279,10 +277,9 @@ public class DiscordController implements EventListener{
                     + "You have to delete a question before adding a new one.\r\n"
                     + "The number of allowed questions to store is " + QuestionRepoService.MAXIMUM_NUMBERS_OF_QUESTION_ALLOWED);
         }catch(TextIsTooLongException ex){
-                logger.error("User was trying to store a question with a textfield length greater than 6000 characters.");
-            retMessageEmb = QuestionEmbedFactory.createErrorEmbed("The maximum length of a single question or answer is 6000 characters.\r\n"
-                        + "Shorten your text before trying to add the question again.\r\n"
-                        + ex.getMessage());
+            logger.error("User was trying to store a question with a field (question/answer) containing more characters than allowed.");
+            retMessageEmb = QuestionEmbedFactory.createErrorEmbed("Shorten your text first before trying to add the question again.\r\n"
+                    + ex.getMessage());
         }catch(ErrorReadingImportFileException e){
             logger.error(e.toString());
             retMessageEmb = QuestionEmbedFactory.createErrorEmbed("Error while reading importfile");

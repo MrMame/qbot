@@ -6,7 +6,8 @@ import java.util.Optional;
 
 public interface IQuestionRepoService {
 
-    Integer MAXIMUM_TEXT_LENGTH = 6000;
+    Integer MAXIMUM_QUESTION_TEXT_LENGTH = 250;
+    Integer MAXIMUM_ANSWER_TEXT_LENGTH = 600;
 
     public Optional<Question> getUniqueRandomQuestion();
 
