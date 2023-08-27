@@ -30,7 +30,8 @@ public class QuestionAddSlashCommand extends AbstractSlashCommand{
         CommandData commandData = Commands.slash(COMMAND_NAME,COMMAND_DESCRIPTION)
                 .addOption(OptionType.STRING,
                         COMMAND_OPTION_QUESTION_NAME,
-                        COMMAND_OPTION_QUESTION_DESCRIPTION)
+                        COMMAND_OPTION_QUESTION_DESCRIPTION,
+                        true)
                 .addOption(OptionType.STRING,
                         COMMAND_OPTION_ANSWER_A_NAME,
                         COMMAND_OPTION_ANSWER_A_DESCRIPTION,
