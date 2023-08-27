@@ -75,7 +75,8 @@ public class Question {
 
     protected Question(){}
 
-    public Question(String questionText,String answerA,String answerB,String answerC,String answerD,String answerE){
+    public Question(Long id, String questionText,String answerA,String answerB,String answerC,String answerD,String answerE){
+        this.id = id;
         this.questionText = questionText;
         this.answerA = answerA;
         this.answerB = answerB;
@@ -83,25 +84,6 @@ public class Question {
         this.answerD = answerD;
         this.answerE = answerE;
     }
-
-//    public Integer calcCompleteLengthOfWholeQuestionsText(){
-//        Integer completeLength = 0;
-//
-//        completeLength += getQuestionText().length();
-//        if(isAnswerAvailableA())
-//            completeLength += getAnswerA().length();
-//        if(isAnswerAvailableB())
-//            completeLength += getAnswerB().length();
-//        if(isAnswerAvailableC())
-//            completeLength += getAnswerC().length();
-//        if(isAnswerAvailableD())
-//            completeLength += getAnswerD().length();
-//        if(isAnswerAvailableE())
-//            completeLength += getAnswerE().length();
-//
-//        return completeLength;
-//
-//    }
 
     @Override
     public String toString() {

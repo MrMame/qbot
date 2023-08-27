@@ -5,6 +5,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 
 import java.awt.*;
+import java.util.List;
 
 
 public class QuestionEmbedFactory {
@@ -57,13 +58,38 @@ public class QuestionEmbedFactory {
         EmbedBuilder eb = new EmbedBuilder();
 
         eb
-//                .setAuthor("qBot")
                 .setColor(Color.RED)
                 .setTitle("qBot ERROR")
                 .setDescription(s);
 
         // send it into the channel
         return eb.build();
+
+    }
+
+    public static MessageEmbed createErrorEmbed(String s, List<Question> errQ ){
+
+        // Get all question ids which cause trouble
+        StringBuilder idText = new StringBuilder();
+        for(Question q:errQ){
+            idText.append(q.getId() + " ");
+        }
+
+        EmbedBuilder eb = new EmbedBuilder();
+        eb
+                .setColor(Color.RED)
+                .setTitle("qBot ERROR")
+                .setDescription(s)
+                .appendDescription("\r\n\r\nIt seems also that some Questions could not be imported because they have some "
+                                    + "issues like too many characters for their question/answer text. Please "
+                                    + "doublecheck the following questions with their corresponding ids inside your "
+                                    + "importfile.")
+                .addField("Number of Questions with error",String.valueOf(errQ.size()),false)
+                .addField("Question IDs which cause trouble",idText.toString(),false);
+
+        // send it into the channel
+        return eb.build();
+
 
     }
 

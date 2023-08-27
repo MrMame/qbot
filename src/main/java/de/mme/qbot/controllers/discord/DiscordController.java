@@ -159,7 +159,8 @@ public class DiscordController implements EventListener{
 
         try{
             Question newQuestion
-                    = new Question(event.getOption(questionAddSlashCommand.COMMAND_OPTION_QUESTION_NAME, OptionMapping::getAsString),
+                    = new Question(0L,
+                    event.getOption(questionAddSlashCommand.COMMAND_OPTION_QUESTION_NAME, OptionMapping::getAsString),
                     event.getOption(questionAddSlashCommand.COMMAND_OPTION_ANSWER_A_NAME, OptionMapping::getAsString),
                     event.getOption(questionAddSlashCommand.COMMAND_OPTION_ANSWER_B_NAME, OptionMapping::getAsString),
                     event.getOption(questionAddSlashCommand.COMMAND_OPTION_ANSWER_C_NAME, OptionMapping::getAsString),
@@ -268,18 +269,21 @@ public class DiscordController implements EventListener{
             RemoveAllQuestionsFromRepositioryIfNotAppendingOption(event);
             addQuestionsToRepository(qList);
             retMessageEmb = QuestionEmbedFactory.createSystemEmbed("Question import finished ok.");
-        }catch(NoImportFileFoundException e){
+        }catch(QuestionImportException e){
+            logger.error(e.toString());
+            retMessageEmb = QuestionEmbedFactory.createErrorEmbed("Some Questions could not be imported.\r\n" +
+                                                                    "Please check the maximum length of question/answer text",
+                                                                    e.getErrorQuestions());
+        }
+        catch(NoImportFileFoundException e){
             logger.error(e.toString());
             retMessageEmb = QuestionEmbedFactory.createErrorEmbed("Importfile was not found.");
         }catch(MaximumQuestionsStoredException e) {
             logger.error(e.toString());
-            retMessageEmb = QuestionEmbedFactory.createErrorEmbed("The maximum number of questions is already stored.\r\n"
-                    + "You have to delete a question before adding a new one.\r\n"
-                    + "The number of allowed questions to store is " + QuestionRepoService.MAXIMUM_NUMBERS_OF_QUESTION_ALLOWED);
-        }catch(TextIsTooLongException ex){
-            logger.error("User was trying to store a question with a field (question/answer) containing more characters than allowed.");
-            retMessageEmb = QuestionEmbedFactory.createErrorEmbed("Shorten your text first before trying to add the question again.\r\n"
-                    + ex.getMessage());
+            retMessageEmb = QuestionEmbedFactory.createErrorEmbed("The maximum number of questions to store is reached.\r\n"
+                    + "Only the first " + QuestionRepoService.MAXIMUM_NUMBERS_OF_QUESTION_ALLOWED + " Questions are imported.\r\n"
+                    + "The number of allowed questions to store is " + QuestionRepoService.MAXIMUM_NUMBERS_OF_QUESTION_ALLOWED,
+                    e.getErrQuestion());
         }catch(ErrorReadingImportFileException e){
             logger.error(e.toString());
             retMessageEmb = QuestionEmbedFactory.createErrorEmbed("Error while reading importfile");
@@ -366,7 +370,8 @@ public class DiscordController implements EventListener{
     }
 
 
-    private static List<Question> readQuestionsFromCommandImportfileOption(SlashCommandFiredEvent event) throws NoImportFileFoundException, ErrorReadingImportFileException ,NoImportFileFoundException{
+    private static List<Question> readQuestionsFromCommandImportfileOption(SlashCommandFiredEvent event)
+            throws NoImportFileFoundException, ErrorReadingImportFileException {
 
         List<Question> retList = new ArrayList<>();
 
@@ -404,10 +409,26 @@ public class DiscordController implements EventListener{
         Boolean clearBeforeImport = (appendData!=null && appendData==false);
         if(clearBeforeImport){questionService.removeAll();}
     }
-    private void addQuestionsToRepository(List<Question> qList)throws MaximumQuestionsStoredException, TextIsTooLongException  {
+    private void addQuestionsToRepository(List<Question> qList)
+            throws MaximumQuestionsStoredException, QuestionImportException  {
+        List<Question> errQuestion = new ArrayList<>();
+        // Try to save questions to repository
         for (Question question : qList) {
-            questionService.saveQuestion(question);
+            try {
+                questionService.saveQuestion(question);
+            } catch (TextIsTooLongException ex) {
+                errQuestion.add(question);
+            } catch (MaximumQuestionsStoredException ex){
+                // If we try to store more then the maximum, we rethrow but with Question error list this time,
+                // because there also could be some import troubles that would be interesting for the user to know.
+                throw new MaximumQuestionsStoredException(ex,errQuestion);
+            }
         }
+        // If we had trouble with importing some questions, we throw an exception
+        if(!errQuestion.isEmpty()){
+            throw new QuestionImportException(errQuestion.size() + " Questions could not be imported."
+                    , errQuestion);}
+
     }
     private boolean isGuildAllowed(SlashCommandInteractionEvent event){
         Boolean retBool = false;

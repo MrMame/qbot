@@ -20,7 +20,8 @@ public class QuestionImportAllSlashCommand extends AbstractSlashCommand{
         CommandData commandData = Commands.slash(COMMAND_NAME,COMMAND_DESCRIPTION)
                 .addOption(OptionType.ATTACHMENT,
                 COMMAND_OPTION_IMPORTFILE_NAME,
-                COMMAND_OPTION_IMPORTFILE_DESCRIPTION)
+                COMMAND_OPTION_IMPORTFILE_DESCRIPTION,
+                        true)
                 .addOption(OptionType.BOOLEAN,
                         COMMAND_OPTION_APPENDDATA_NAME,
                         COMMAND_OPTION_APPENDDATA_DESCRIPTION);
