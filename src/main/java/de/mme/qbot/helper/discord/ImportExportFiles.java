@@ -32,6 +32,7 @@ public class ImportExportFiles {
                 .filter(line->!line.startsWith(COMMENT_CHARACTER))        // Skip Comment rows
                 .forEach((line)->{                          // Each line to question
                     String[] parts = line.split(SEPERATOR);
+                    Long id = Long.valueOf(parts[0].replace("\"",""));
                     parts[1] = parts[1].substring(1,parts[1].length()-1);
                     parts[2] = (parts[2].equals("null")) ? parts[2]=null : parts[2].substring(1,parts[2].length()-1);
                     parts[3] = (parts[3].equals("null")) ? parts[3]=null : parts[3].substring(1,parts[3].length()-1);
@@ -39,7 +40,7 @@ public class ImportExportFiles {
                     parts[5] = (parts[5].equals("null")) ? parts[5]=null : parts[5].substring(1,parts[5].length()-1);
                     parts[6] = (parts[6].equals("null")) ? parts[6]=null : parts[6].substring(1,parts[6].length()-1);
 
-                    Question newQuestion = new Question(parts[1],parts[2],parts[3],parts[4],parts[5],parts[6]);
+                    Question newQuestion = new Question(id,parts[1],parts[2],parts[3],parts[4],parts[5],parts[6]);
                     retList.add(newQuestion);
                 });
 
