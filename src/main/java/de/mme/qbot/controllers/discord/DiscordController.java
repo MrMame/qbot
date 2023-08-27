@@ -273,11 +273,11 @@ public class DiscordController implements EventListener{
             retMessageEmb = QuestionEmbedFactory.createErrorEmbed("Importfile was not found.");
         }catch(MaximumQuestionsStoredException e) {
             logger.error(e.toString());
-            retMessageEmb = QuestionEmbedFactory.createErrorEmbed("The maximum number of questions is already stored.\r\n"
-                    + "You have to delete a question before adding a new one.\r\n"
+            retMessageEmb = QuestionEmbedFactory.createErrorEmbed("The maximum number of questions to store is reached.\r\n"
+                    + "Only the first " + QuestionRepoService.MAXIMUM_NUMBERS_OF_QUESTION_ALLOWED + " Questions are imported.\r\n"
                     + "The number of allowed questions to store is " + QuestionRepoService.MAXIMUM_NUMBERS_OF_QUESTION_ALLOWED);
         }catch(TextIsTooLongException ex){
-            logger.error("User was trying to store a question with a field (question/answer) containing more characters than allowed.");
+            logger.error("User was trying to store a question were a field (question/answer) containing more characters than allowed.");
             retMessageEmb = QuestionEmbedFactory.createErrorEmbed("Shorten your text first before trying to add the question again.\r\n"
                     + ex.getMessage());
         }catch(ErrorReadingImportFileException e){
