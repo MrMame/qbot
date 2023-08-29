@@ -77,12 +77,12 @@ public class Question {
 
     public Question(Long id, String questionText,String answerA,String answerB,String answerC,String answerD,String answerE){
         this.id = id;
-        this.questionText = questionText;
-        this.answerA = answerA;
-        this.answerB = answerB;
-        this.answerC = answerC;
-        this.answerD = answerD;
-        this.answerE = answerE;
+        this.questionText = questionText.replace("\r","").replace("\n","");
+        this.answerA = answerA!=null? answerA.replace("\r","").replace("\n",""):null;
+        this.answerB = answerB!=null? answerB.replace("\r","").replace("\n",""):null;
+        this.answerC = answerC!=null? answerC.replace("\r","").replace("\n",""):null;
+        this.answerD = answerD!=null? answerD.replace("\r","").replace("\n",""):null;
+        this.answerE = answerE!=null? answerE.replace("\r","").replace("\n",""):null;
     }
 
     @Override
