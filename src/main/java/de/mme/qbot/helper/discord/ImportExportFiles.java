@@ -11,7 +11,9 @@ import java.util.List;
 
 public class ImportExportFiles {
 
-    public static final String FILE_FIRSTROW_TEXT = "qBot-Questions Exportfile\r\n";
+    public static final String FILE_QUESTIONS_FIRSTROW_TEXT = "qBot-Questions Exportfile\r\n";
+    public static final String FILE_DARES_FIRSTROW_TEXT = "qBot-Questions Exportfile\r\n";
+    public static final String CSV_HEADERNAME_DARES = "dare";
     public static final String CSV_HEADERNAME_QUESTION = "question";
     public static final String CSV_HEADERNAME_ANSWER_A = "answer-a";
     public static final String CSV_HEADERNAME_ANSWER_B = "answer-b";
@@ -73,7 +75,7 @@ public class ImportExportFiles {
 
         StringBuilder exportFileContent = new StringBuilder();
         // -> Export Date
-        exportFileContent.append(COMMENT_CHARACTER + FILE_FIRSTROW_TEXT);
+        exportFileContent.append(COMMENT_CHARACTER + FILE_QUESTIONS_FIRSTROW_TEXT);
         exportFileContent.append(COMMENT_CHARACTER + EXPORT_DATETIMEROW_TEXT_PREFIX);
         exportFileContent.append(LocalDateTime.now());
         exportFileContent.append(NEWLINE_CHARACTERS);
@@ -118,14 +120,15 @@ public class ImportExportFiles {
 
         StringBuilder exportFileContent = new StringBuilder();
         // -> Export Date
-        exportFileContent.append(COMMENT_CHARACTER + FILE_FIRSTROW_TEXT);
+        exportFileContent.append(COMMENT_CHARACTER + FILE_DARES_FIRSTROW_TEXT);
         exportFileContent.append(COMMENT_CHARACTER + EXPORT_DATETIMEROW_TEXT_PREFIX);
         exportFileContent.append(LocalDateTime.now());
         exportFileContent.append(NEWLINE_CHARACTERS);
 
         // -> Header Row - Apending # marks Comment
         exportFileContent.append(COMMENT_CHARACTER);
-        exportFileContent.append(CSV_HEADERNAME_ID + NEWLINE_CHARACTERS);
+        exportFileContent.append(CSV_HEADERNAME_ID + SEPERATOR );
+        exportFileContent.append(CSV_HEADERNAME_QUESTION + NEWLINE_CHARACTERS);
 
         // -> Questions
         for(Dare d:  dares){
