@@ -13,7 +13,7 @@ public interface IQuestionRepoService {
 
     public Optional<Question> getQuestionById(long id);
 
-    public Question saveQuestion(Question question) throws MaximumQuestionsStoredException,TextIsTooLongException;
+    public Question saveQuestion(Question question) throws MaximumQuestionsStoredException, TextIsTooLongException;
 
     public Iterable<Question> getAllQuestions();
 

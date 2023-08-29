@@ -1,6 +1,7 @@
 package de.mme.qbot.helper.discord;
 
 import de.mme.qbot.controllers.discord.ErrorReadingImportFileException;
+import de.mme.qbot.model.domain.Dare;
 import de.mme.qbot.model.domain.Question;
 
 import java.io.BufferedReader;
@@ -47,8 +48,26 @@ public class ImportExportFiles {
         return retList;
     }
 
+    public static List<Dare> ReadDaresFromImportfile(BufferedReader br) throws ErrorReadingImportFileException {
+        List<Dare> retList = new ArrayList<>();
 
-    public static String createExportFileContent(Iterable<Question> questions){
+        br.lines()
+                .map(line->line.trim())                     // Remove Blanks from beginning and end of line
+                .filter(line->!line.startsWith(COMMENT_CHARACTER))        // Skip Comment rows
+                .forEach((line)->{                          // Each line to question
+                    String[] parts = line.split(SEPERATOR);
+                    Long id = Long.valueOf(parts[0].replace("\"",""));
+                    parts[1] = parts[1].substring(1,parts[1].length()-1);
+
+                    Dare newDare = new Dare(id,parts[1]);
+                    retList.add(newDare);
+                });
+
+        return retList;
+    }
+
+
+    public static String createQuestionExportFileContent(Iterable<Question> questions){
 
         // Export all questions from repository
 
@@ -88,6 +107,35 @@ public class ImportExportFiles {
             exportFileContent.append(qAnswerC + SEPERATOR);
             exportFileContent.append(qAnswerD + SEPERATOR);
             exportFileContent.append(qAnswerE + NEWLINE_CHARACTERS);
+        }
+
+        return exportFileContent.toString();
+    }
+
+    public static String createDareExportFileContent(Iterable<Dare> dares){
+
+        // Export all questions from repository
+
+        StringBuilder exportFileContent = new StringBuilder();
+        // -> Export Date
+        exportFileContent.append(COMMENT_CHARACTER + FILE_FIRSTROW_TEXT);
+        exportFileContent.append(COMMENT_CHARACTER + EXPORT_DATETIMEROW_TEXT_PREFIX);
+        exportFileContent.append(LocalDateTime.now());
+        exportFileContent.append(NEWLINE_CHARACTERS);
+
+        // -> Header Row - Apending # marks Comment
+        exportFileContent.append(COMMENT_CHARACTER);
+        exportFileContent.append(CSV_HEADERNAME_ID + NEWLINE_CHARACTERS);
+
+        // -> Questions
+        for(Dare d:  dares){
+
+            String qField = "\"" + d.getId() + "\"";
+            String qText = (d.getText()!=null) ? "\""+d.getText()+"\"" : "null";
+
+            exportFileContent.append(qField + SEPERATOR);
+            exportFileContent.append(qText + NEWLINE_CHARACTERS);
+
         }
 
         return exportFileContent.toString();

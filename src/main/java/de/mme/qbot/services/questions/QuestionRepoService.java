@@ -1,7 +1,10 @@
-package de.mme.qbot.services;
+package de.mme.qbot.services.questions;
 
 import de.mme.qbot.model.domain.Question;
 import de.mme.qbot.repositories.IQuestionRepository;
+import de.mme.qbot.services.MaximumQuestionsStoredException;
+import de.mme.qbot.services.TextIsTooLongException;
+import de.mme.qbot.services.IQuestionRepoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

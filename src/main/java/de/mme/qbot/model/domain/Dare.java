@@ -26,7 +26,7 @@ public class Dare {
 
     protected Dare(){}
 
-    public Dare(Long id, String questionText, String answerA, String answerB, String answerC, String answerD, String answerE) {
+    public Dare(Long id, String questionText) {
         this.id = id;
         this.text = questionText != null ? questionText.replace("\r", "").replace("\n", "") : null;
     }
