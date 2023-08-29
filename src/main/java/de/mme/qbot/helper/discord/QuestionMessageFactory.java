@@ -15,11 +15,11 @@ public class QuestionMessageFactory {
 
 
     public static final String BUTTON_ID_ANONYM = "anonym-button-id";
-    public static final String BUTTON_TEXT_ANONYM = "Anonym Antworten";
+    public static final String BUTTON_TEXT_ANONYM = "Sags dem Bot...";
     public static final String BUTTON_ID_NEW_QUESTION = "new-question-button-id";
-    public static final String BUTTON_TEXT_NEW_QUESTION = "Nächste Frage";
+    public static final String BUTTON_TEXT_NEW_QUESTION = "Wahrheit!";
     public static final String BUTTON_ID_NEW_DARE = "new-dare-button-id";
-    public static final String BUTTON_TEXT_NEW_DARE = "Neue Pflicht";
+    public static final String BUTTON_TEXT_NEW_DARE = "Pflicht!";
 
     public static final String BUTTON_ID_ANSWER_A ="answer-a-button-id";
     public static final String BUTTON_TEXT_ANSWER_A ="A";
