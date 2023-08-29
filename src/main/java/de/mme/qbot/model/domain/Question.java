@@ -77,7 +77,7 @@ public class Question {
 
     public Question(Long id, String questionText,String answerA,String answerB,String answerC,String answerD,String answerE){
         this.id = id;
-        this.questionText = questionText.replace("\r","").replace("\n","");
+        this.questionText = questionText!=null?questionText.replace("\r","").replace("\n",""):null;
         this.answerA = answerA!=null? answerA.replace("\r","").replace("\n",""):null;
         this.answerB = answerB!=null? answerB.replace("\r","").replace("\n",""):null;
         this.answerC = answerC!=null? answerC.replace("\r","").replace("\n",""):null;
