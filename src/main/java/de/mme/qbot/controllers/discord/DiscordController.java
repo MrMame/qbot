@@ -7,8 +7,8 @@ import de.mme.qbot.helper.discord.ImportExportFiles;
 import de.mme.qbot.model.domain.Dare;
 import de.mme.qbot.model.domain.Question;
 import de.mme.qbot.services.*;
-import de.mme.qbot.services.DareRepoService;
-import de.mme.qbot.services.QuestionRepoService;
+import de.mme.qbot.services.DareService;
+import de.mme.qbot.services.QuestionService;
 import de.mme.qbot.helper.discord.QuestionEmbedFactory;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -47,8 +47,8 @@ import java.util.function.Consumer;
 public class DiscordController implements EventListener{
 
     JDA jda;
-    IQuestionRepoService questionService;
-    IDareRepoService dareService;
+    IQuestionService questionService;
+    IDareService dareService;
     List<ISlashCommand> slashCommandsList;
     Environment env;
 
@@ -57,7 +57,7 @@ public class DiscordController implements EventListener{
     static Logger logger = LoggerFactory.getLogger(DiscordController.class);
 
     @Autowired
-    public DiscordController(Environment env, IQuestionRepoService questionService, IDareRepoService dareService) {
+    public DiscordController(Environment env, IQuestionService questionService, IDareService dareService) {
         this.env = env;
         // First create the Discord API Object
         this.jda = createDiscordApiObject(env);
@@ -191,7 +191,7 @@ public class DiscordController implements EventListener{
             logger.error("The maximum number of questions is already stored in repository");
             emb = QuestionEmbedFactory.createErrorEmbed("The maximum number of questions is already stored.\r\n"
                                                         + "You have to delete a question before adding a new one.\r\n"
-                                                        + "Maximum number of allowed questions to store is " + QuestionRepoService.MAXIMUM_NUMBERS_OF_QUESTION_ALLOWED);
+                                                        + "Maximum number of allowed questions to store is " + QuestionService.MAXIMUM_NUMBERS_OF_QUESTION_ALLOWED);
         }catch(TextIsTooLongException ex){
             logger.error("User was trying to store a question with a field (question/answer) containing more characters than allowed.");
             emb = QuestionEmbedFactory.createErrorEmbed("Shorten your text first before trying to add the question again.\r\n"
@@ -291,8 +291,8 @@ public class DiscordController implements EventListener{
         }catch(MaximumQuestionsStoredException e) {
             logger.error(e.toString());
             retMessageEmb = QuestionEmbedFactory.createErrorEmbed("The maximum number of questions to store is reached.\r\n"
-                    + "Only the first " + QuestionRepoService.MAXIMUM_NUMBERS_OF_QUESTION_ALLOWED + " Questions are imported.\r\n"
-                    + "The number of allowed questions to store is " + QuestionRepoService.MAXIMUM_NUMBERS_OF_QUESTION_ALLOWED,
+                    + "Only the first " + QuestionService.MAXIMUM_NUMBERS_OF_QUESTION_ALLOWED + " Questions are imported.\r\n"
+                    + "The number of allowed questions to store is " + QuestionService.MAXIMUM_NUMBERS_OF_QUESTION_ALLOWED,
                     e.getErrQuestion());
         }catch(ErrorReadingImportFileException e){
             logger.error(e.toString());
@@ -365,7 +365,7 @@ public class DiscordController implements EventListener{
             logger.error("The maximum number of dares is already stored in repository");
             emb = DareEmbedFactory.createErrorEmbed("The maximum number of dares is already stored.\r\n"
                     + "You have to delete a dare before adding a new one.\r\n"
-                    + "Maximum number of allowed dares to store is " + DareRepoService.MAXIMUM_NUMBERS_OF_DARES_ALLOWED);
+                    + "Maximum number of allowed dares to store is " + DareService.MAXIMUM_NUMBERS_OF_DARES_ALLOWED);
         }catch(TextIsTooLongException ex){
             logger.error("User was trying to store a dare with a field (dare/answer) containing more characters than allowed.");
             emb = DareEmbedFactory.createErrorEmbed("Shorten your text first before trying to add the dare again.\r\n"
@@ -465,8 +465,8 @@ public class DiscordController implements EventListener{
         }catch(MaximumDaresStoredException e) {
             logger.error(e.toString());
             retMessageEmb = DareEmbedFactory.createErrorEmbed("The maximum number of dares to store is reached.\r\n"
-                            + "Only the first " + DareRepoService.MAXIMUM_NUMBERS_OF_DARES_ALLOWED + " Dares are imported.\r\n"
-                            + "The number of allowed dares to store is " + DareRepoService.MAXIMUM_NUMBERS_OF_DARES_ALLOWED,
+                            + "Only the first " + DareService.MAXIMUM_NUMBERS_OF_DARES_ALLOWED + " Dares are imported.\r\n"
+                            + "The number of allowed dares to store is " + DareService.MAXIMUM_NUMBERS_OF_DARES_ALLOWED,
                     e.getErrDares());
         }catch(ErrorReadingImportFileException e){
             logger.error(e.toString());

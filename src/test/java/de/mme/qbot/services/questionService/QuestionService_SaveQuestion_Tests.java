@@ -1,6 +1,5 @@
-package de.mme.qbot.services.questionRepoService;
+package de.mme.qbot.services.questionService;
 
-import de.mme.qbot.model.domain.Dare;
 import de.mme.qbot.model.domain.Question;
 import de.mme.qbot.services.*;
 import org.junit.jupiter.api.Assertions;
@@ -13,10 +12,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class QuestionRepoService_SaveQuestion_Tests {
+public class QuestionService_SaveQuestion_Tests {
 
     @Autowired
-    QuestionRepoService repo;
+    QuestionService repo;
 
     @Test
     void addingQuestionToFullDb_ThrowsMaximumQuestionsStoredException() throws MaximumQuestionsStoredException, TextIsTooLongException {
@@ -24,7 +23,7 @@ public class QuestionRepoService_SaveQuestion_Tests {
 
         // ACT
         MaximumQuestionsStoredException thrown = Assertions.assertThrows(MaximumQuestionsStoredException.class, () -> {
-            for(int i = 1;i<=QuestionRepoService.MAXIMUM_NUMBERS_OF_QUESTION_ALLOWED+1;i++){
+            for(int i = 1; i<= QuestionService.MAXIMUM_NUMBERS_OF_QUESTION_ALLOWED+1; i++){
                 repo.saveQuestion(new Question(Long.valueOf(i)
                         , "Question Text of " + i
                         , "AnswerA Text of " + i

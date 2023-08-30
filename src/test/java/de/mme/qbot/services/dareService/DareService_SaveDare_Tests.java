@@ -1,28 +1,22 @@
-package de.mme.qbot.services.dareRepoService;
+package de.mme.qbot.services.dareService;
 
 import de.mme.qbot.model.domain.Dare;
-import de.mme.qbot.model.domain.Question;
-import de.mme.qbot.services.DareRepoService;
+import de.mme.qbot.services.DareService;
 import de.mme.qbot.services.MaximumDaresStoredException;
 import de.mme.qbot.services.TextIsTooLongException;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootTest
 @AutoConfigureMockMvc
-public class DareRepoService_SaveDare_Tests {
+public class DareService_SaveDare_Tests {
 
     @Autowired
-    DareRepoService repo;
+    DareService repo;
 
     @Test
     void addingDareToFullDb_ThrowsMaximumDaresStoredException() throws MaximumDaresStoredException, TextIsTooLongException {
@@ -30,7 +24,7 @@ public class DareRepoService_SaveDare_Tests {
 
         // ACT
         MaximumDaresStoredException thrown = Assertions.assertThrows(MaximumDaresStoredException.class, () -> {
-            for(int i = 1;i<=DareRepoService.MAXIMUM_NUMBERS_OF_DARES_ALLOWED+1;i++){
+            for(int i = 1; i<= DareService.MAXIMUM_NUMBERS_OF_DARES_ALLOWED+1; i++){
                 repo.saveDare(new Dare(Long.valueOf(i), "Dare Text of " + i ));
             }
         });

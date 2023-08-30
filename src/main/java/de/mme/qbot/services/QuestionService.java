@@ -2,9 +2,6 @@ package de.mme.qbot.services;
 
 import de.mme.qbot.model.domain.Question;
 import de.mme.qbot.repositories.IQuestionRepository;
-import de.mme.qbot.services.MaximumQuestionsStoredException;
-import de.mme.qbot.services.TextIsTooLongException;
-import de.mme.qbot.services.IQuestionRepoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class QuestionRepoService implements IQuestionRepoService {
+public class QuestionService implements IQuestionService {
 
     public static final int MAXIMUM_NUMBERS_OF_QUESTION_ALLOWED = 500;
     IQuestionRepository repository;
@@ -22,7 +19,7 @@ public class QuestionRepoService implements IQuestionRepoService {
     List<Question> alreadyGottenQuestion = new ArrayList<>();
 
     @Autowired
-    public QuestionRepoService(IQuestionRepository repository) {
+    public QuestionService(IQuestionRepository repository) {
         this.repository = repository;
     }
 

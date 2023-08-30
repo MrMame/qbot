@@ -1,9 +1,7 @@
 package de.mme.qbot.services;
 
 import de.mme.qbot.model.domain.Dare;
-import de.mme.qbot.model.domain.Question;
 import de.mme.qbot.repositories.IDareRepository;
-import de.mme.qbot.services.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +12,7 @@ import java.util.Optional;
 
 
 @Service
-public class DareRepoService implements IDareRepoService {
+public class DareService implements IDareService {
 
     public static final int MAXIMUM_NUMBERS_OF_DARES_ALLOWED = 500;
     IDareRepository repository;
@@ -22,7 +20,7 @@ public class DareRepoService implements IDareRepoService {
     List<Dare> alreadyGottenDares = new ArrayList<>();
 
     @Autowired
-    public DareRepoService(IDareRepository repository) {
+    public DareService(IDareRepository repository) {
         this.repository = repository;
     }
 

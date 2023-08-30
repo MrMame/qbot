@@ -4,7 +4,7 @@ import de.mme.qbot.model.domain.Question;
 
 import java.util.Optional;
 
-public interface IQuestionRepoService {
+public interface IQuestionService {
 
     Integer MAXIMUM_QUESTION_TEXT_LENGTH = 250;
     Integer MAXIMUM_ANSWER_TEXT_LENGTH = 600;
