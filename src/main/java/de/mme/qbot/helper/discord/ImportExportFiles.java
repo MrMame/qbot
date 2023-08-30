@@ -12,7 +12,7 @@ import java.util.List;
 public class ImportExportFiles {
 
     public static final String FILE_QUESTIONS_FIRSTROW_TEXT = "qBot-Questions Exportfile\r\n";
-    public static final String FILE_DARES_FIRSTROW_TEXT = "qBot-Questions Exportfile\r\n";
+    public static final String FILE_DARES_FIRSTROW_TEXT = "qBot-Dares Exportfile\r\n";
     public static final String CSV_HEADERNAME_DARES = "dare";
     public static final String CSV_HEADERNAME_QUESTION = "question";
     public static final String CSV_HEADERNAME_ANSWER_A = "answer-a";
@@ -128,7 +128,7 @@ public class ImportExportFiles {
         // -> Header Row - Apending # marks Comment
         exportFileContent.append(COMMENT_CHARACTER);
         exportFileContent.append(CSV_HEADERNAME_ID + SEPERATOR );
-        exportFileContent.append(CSV_HEADERNAME_QUESTION + NEWLINE_CHARACTERS);
+        exportFileContent.append(CSV_HEADERNAME_DARES + NEWLINE_CHARACTERS);
 
         // -> Questions
         for(Dare d:  dares){
