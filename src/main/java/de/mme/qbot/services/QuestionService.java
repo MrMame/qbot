@@ -74,6 +74,7 @@ public class QuestionService implements IQuestionService {
 
     @Override
     public void removeAll() {
+        alreadyGottenQuestion.clear();
         repository.deleteAll();
     }
 

@@ -69,6 +69,7 @@ public class DareService implements IDareService {
 
     @Override
     public void removeAll() {
+        alreadyGottenDares.clear();
         repository.deleteAll();
     }
 
