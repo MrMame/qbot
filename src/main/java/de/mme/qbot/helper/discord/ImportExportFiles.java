@@ -11,6 +11,10 @@ import java.util.List;
 
 public class ImportExportFiles {
 
+
+    public static final String FILENAME_PREFIX_EXPORT_QUESTIONS = "qbot-questions-export";
+    public static final String FILENAME_PREFIX_EXPORT_DARES = "qbot-dares-export";
+
     public static final String FILE_QUESTIONS_FIRSTROW_TEXT = "qBot-Questions Exportfile\r\n";
     public static final String FILE_DARES_FIRSTROW_TEXT = "qBot-Dares Exportfile\r\n";
     public static final String CSV_HEADERNAME_DARES = "dare";
@@ -36,6 +40,7 @@ public class ImportExportFiles {
                     .filter(line -> !line.startsWith(COMMENT_CHARACTER))        // Skip Comment rows
                     .forEach((line) -> {                          // Each line to question
                             String[] parts = line.split(SEPERATOR);
+                            if(parts.length!=7) throw new RuntimeException("Question Import Format Error. Number of columns is not 6");
                             Long id =  Long.valueOf(parts[0].replace("\"", ""));
                             parts[1] = parts[1].substring(1, parts[1].length() - 1);
                             parts[2] = (parts[2].equals("null")) ? parts[2] = null : parts[2].substring(1, parts[2].length() - 1);
@@ -55,24 +60,25 @@ public class ImportExportFiles {
 
     public static List<Dare> ReadDaresFromImportfile(BufferedReader br) throws ErrorReadingImportFileException {
         List<Dare> retList = new ArrayList<>();
-    try {
-        br.lines()
-                .map(line->line.trim())                     // Remove Blanks from beginning and end of line
-                .filter(line->!line.startsWith(COMMENT_CHARACTER))        // Skip Comment rows
-                .forEach((line)->{                          // Each line to question
-                    String[] parts = line.split(SEPERATOR);
-                    Long id = Long.valueOf(parts[0].replace("\"", ""));
-                        parts[1] = parts[1].substring(1, parts[1].length() - 1);
+        try {
+            br.lines()
+                    .map(line->line.trim())                     // Remove Blanks from beginning and end of line
+                    .filter(line->!line.startsWith(COMMENT_CHARACTER))        // Skip Comment rows
+                    .forEach((line)->{                          // Each line to question
+                        String[] parts = line.split(SEPERATOR);
+                        if(parts.length!=2) throw new RuntimeException("Dare Import Format Error. Number of columns is not 6");
+                        Long id = Long.valueOf(parts[0].replace("\"", ""));
+                            parts[1] = parts[1].substring(1, parts[1].length() - 1);
 
-                        Dare newDare = new Dare(id, parts[1]);
-                        retList.add(newDare);
-                });
+                            Dare newDare = new Dare(id, parts[1]);
+                            retList.add(newDare);
+                    });
 
-        }catch(RuntimeException ex){
-            throw new ErrorReadingImportFileException("Problems with parsing dares-importfile. " + ex.getMessage(),ex);
-        }
+            }catch(RuntimeException ex){
+                throw new ErrorReadingImportFileException("Problems with parsing dares-importfile. " + ex.getMessage(),ex);
+            }
 
-        return retList;
+            return retList;
     }
 
 
