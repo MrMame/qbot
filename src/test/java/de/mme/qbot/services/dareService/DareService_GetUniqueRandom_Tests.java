@@ -32,6 +32,8 @@ public class DareService_GetUniqueRandom_Tests {
         Optional<Dare> retDare = repo.getUniqueRandomDare();
         // ASSERT
         Assertions.assertEquals(true, retDare.isEmpty());
+
+        repo.removeAll();
     }
 
     @Test
@@ -45,6 +47,8 @@ public class DareService_GetUniqueRandom_Tests {
 
         // ASSERT
         Assertions.assertEquals(newDare.getText(), storedDare.get().getText());
+
+        repo.removeAll();
     }
 
     @Test
@@ -85,7 +89,7 @@ public class DareService_GetUniqueRandom_Tests {
             // the should be the dare in the return list only one time, not lesse or more.
             Assertions.assertEquals(1,cntFound);
             Assertions.assertNotEquals(NUMBER_OF_DARES_TO_INSERT,cntSamePos);   // if equal, all are at same position
-
+            repo.removeAll();
         }
     }
 
