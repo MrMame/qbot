@@ -254,7 +254,7 @@ public class DiscordController implements EventListener{
             // Finish wo errors, so create the sytsem message
             messageEmb = QuestionEmbedFactory.createSystemEmbed("All questions exported.");
 
-            messageCreateBuilder.addFiles(FileUpload.fromData(targetStream,"qbot-export.txt"));
+            messageCreateBuilder.addFiles(FileUpload.fromData(targetStream, ImportExportFiles.FILENAME_PREFIX_EXPORT_QUESTIONS + ".txt"));
             messageCreateBuilder.addEmbeds(messageEmb);
 
         }catch(Exception ex){
@@ -428,7 +428,7 @@ public class DiscordController implements EventListener{
             // Finish wo errors, so create the sytsem message
             messageEmb = DareEmbedFactory.createSystemEmbed("All dares exported.");
 
-            messageCreateBuilder.addFiles(FileUpload.fromData(targetStream,"qbot-export.txt"));
+            messageCreateBuilder.addFiles(FileUpload.fromData(targetStream,ImportExportFiles.FILENAME_PREFIX_EXPORT_DARES + ".txt"));
             messageCreateBuilder.addEmbeds(messageEmb);
 
         }catch(Exception ex){
