@@ -1,4 +1,4 @@
-package de.mme.qbot.services.questions;
+package de.mme.qbot.services;
 
 import de.mme.qbot.model.domain.Question;
 import de.mme.qbot.repositories.IQuestionRepository;

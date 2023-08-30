@@ -1,4 +1,4 @@
-package de.mme.qbot.services.dares;
+package de.mme.qbot.services;
 
 import de.mme.qbot.model.domain.Dare;
 import de.mme.qbot.model.domain.Question;
