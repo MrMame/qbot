@@ -22,7 +22,8 @@ public class DareRemoveByIdSlashCommand extends AbstractSlashCommand{
         CommandData commandData = Commands.slash(COMMAND_NAME,COMMAND_DESCRIPTION)
                 .addOption(OptionType.INTEGER,
                         COMMAND_OPTION_ID_NAME,
-                        COMMAND_OPTION_ID_DESCRIPTION);
+                        COMMAND_OPTION_ID_DESCRIPTION,
+                        true);
 
         this.setCommandData(commandData);
         this.setCommandHandler(eventHandler);
