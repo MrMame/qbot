@@ -296,7 +296,7 @@ public class DiscordController implements EventListener{
                     e.getErrQuestion());
         }catch(ErrorReadingImportFileException e){
             logger.error(e.toString());
-            retMessageEmb = QuestionEmbedFactory.createErrorEmbed("Error while reading importfile");
+            retMessageEmb = DareEmbedFactory.createErrorEmbed("Error while reading importfile: " + e.toString());
         }finally {
             // Deliver message to discord-user
             event.replyEmbeds(retMessageEmb)
@@ -470,7 +470,7 @@ public class DiscordController implements EventListener{
                     e.getErrDares());
         }catch(ErrorReadingImportFileException e){
             logger.error(e.toString());
-            retMessageEmb = DareEmbedFactory.createErrorEmbed("Error while reading importfile");
+            retMessageEmb = DareEmbedFactory.createErrorEmbed("Error while reading importfile: " + e.toString());
         }finally {
             // Deliver message to discord-user
             event.replyEmbeds(retMessageEmb)

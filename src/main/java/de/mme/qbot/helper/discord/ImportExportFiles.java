@@ -30,40 +30,47 @@ public class ImportExportFiles {
     public static List<Question> ReadQuestionsFromImportfile(BufferedReader br) throws ErrorReadingImportFileException {
         List<Question> retList = new ArrayList<>();
 
-        br.lines()
-                .map(line->line.trim())                     // Remove Blanks from beginning and end of line
-                .filter(line->!line.startsWith(COMMENT_CHARACTER))        // Skip Comment rows
-                .forEach((line)->{                          // Each line to question
-                    String[] parts = line.split(SEPERATOR);
-                    Long id = Long.valueOf(parts[0].replace("\"",""));
-                    parts[1] = parts[1].substring(1,parts[1].length()-1);
-                    parts[2] = (parts[2].equals("null")) ? parts[2]=null : parts[2].substring(1,parts[2].length()-1);
-                    parts[3] = (parts[3].equals("null")) ? parts[3]=null : parts[3].substring(1,parts[3].length()-1);
-                    parts[4] = (parts[4].equals("null")) ? parts[4]=null : parts[4].substring(1,parts[4].length()-1);
-                    parts[5] = (parts[5].equals("null")) ? parts[5]=null : parts[5].substring(1,parts[5].length()-1);
-                    parts[6] = (parts[6].equals("null")) ? parts[6]=null : parts[6].substring(1,parts[6].length()-1);
+        try {
+            br.lines()
+                    .map(line -> line.trim())                     // Remove Blanks from beginning and end of line
+                    .filter(line -> !line.startsWith(COMMENT_CHARACTER))        // Skip Comment rows
+                    .forEach((line) -> {                          // Each line to question
+                            String[] parts = line.split(SEPERATOR);
+                            Long id =  Long.valueOf(parts[0].replace("\"", ""));
+                            parts[1] = parts[1].substring(1, parts[1].length() - 1);
+                            parts[2] = (parts[2].equals("null")) ? parts[2] = null : parts[2].substring(1, parts[2].length() - 1);
+                            parts[3] = (parts[3].equals("null")) ? parts[3] = null : parts[3].substring(1, parts[3].length() - 1);
+                            parts[4] = (parts[4].equals("null")) ? parts[4] = null : parts[4].substring(1, parts[4].length() - 1);
+                            parts[5] = (parts[5].equals("null")) ? parts[5] = null : parts[5].substring(1, parts[5].length() - 1);
+                            parts[6] = (parts[6].equals("null")) ? parts[6] = null : parts[6].substring(1, parts[6].length() - 1);
 
-                    Question newQuestion = new Question(id,parts[1],parts[2],parts[3],parts[4],parts[5],parts[6]);
-                    retList.add(newQuestion);
-                });
-
+                            Question newQuestion = new Question(id, parts[1], parts[2], parts[3], parts[4], parts[5], parts[6]);
+                            retList.add(newQuestion);
+                    });
+        }catch(RuntimeException ex){
+            throw new ErrorReadingImportFileException("Problems with parsing questions-importfile. " + ex.getMessage(),ex);
+        }
         return retList;
     }
 
     public static List<Dare> ReadDaresFromImportfile(BufferedReader br) throws ErrorReadingImportFileException {
         List<Dare> retList = new ArrayList<>();
-
+    try {
         br.lines()
                 .map(line->line.trim())                     // Remove Blanks from beginning and end of line
                 .filter(line->!line.startsWith(COMMENT_CHARACTER))        // Skip Comment rows
                 .forEach((line)->{                          // Each line to question
                     String[] parts = line.split(SEPERATOR);
-                    Long id = Long.valueOf(parts[0].replace("\"",""));
-                    parts[1] = parts[1].substring(1,parts[1].length()-1);
+                    Long id = Long.valueOf(parts[0].replace("\"", ""));
+                        parts[1] = parts[1].substring(1, parts[1].length() - 1);
 
-                    Dare newDare = new Dare(id,parts[1]);
-                    retList.add(newDare);
+                        Dare newDare = new Dare(id, parts[1]);
+                        retList.add(newDare);
                 });
+
+        }catch(RuntimeException ex){
+            throw new ErrorReadingImportFileException("Problems with parsing dares-importfile. " + ex.getMessage(),ex);
+        }
 
         return retList;
     }
