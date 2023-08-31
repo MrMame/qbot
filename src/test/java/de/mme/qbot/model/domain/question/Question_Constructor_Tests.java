@@ -51,15 +51,17 @@ public class Question_Constructor_Tests {
     }
 
     @Test
-    void UsingNullValues_noErrorsAndNullReturned() {
+    void UsingNullValues_idZeroAndValuesNullAreReturned() {
 
         // ARRANGE
         Question question;
 
         // ACT
-        question = new Question(0000L,null,null,null,null,null,null);
+        question = new Question(null,null,null,null,null,null,null);
 
         // ASSERT
+
+        assertEquals(0000L,question.getId());
         assertEquals(null,question.getQuestionText());
         assertEquals(null,question.getAnswerA());
         assertEquals(null,question.getAnswerB());
