@@ -62,6 +62,10 @@ public class ImportExportFiles {
     }
 
     public static List<Dare> ReadDaresFromImportfile(BufferedReader br) throws ErrorReadingImportFileException {
+
+        if(br==null)throw new IllegalArgumentException("BufferedReader Argument may not be null");
+
+
         List<Dare> retList = new ArrayList<>();
         try {
             br.lines()
@@ -70,8 +74,8 @@ public class ImportExportFiles {
                     .forEach((line)->{                          // Each line to question
                         String[] parts = line.split(SEPERATOR);
                         if(parts.length!=2) throw new RuntimeException("Dare Import Format Error. Number of columns is not 6");
-                        Long id = Long.valueOf(parts[0].replace("\"", ""));
-                            parts[1] = parts[1].substring(1, parts[1].length() - 1);
+                            Long id = Long.valueOf(parts[0].replace("\"", ""));
+                            parts[1] = (parts[1].equals("null")) ? parts[1] = null : parts[1].substring(1, parts[1].length() - 1);
 
                             Dare newDare = new Dare(id, parts[1]);
                             retList.add(newDare);
