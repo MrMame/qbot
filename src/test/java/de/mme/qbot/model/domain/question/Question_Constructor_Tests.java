@@ -16,7 +16,7 @@ public class Question_Constructor_Tests {
         String lbText = "This is normal Text.";
 
         // ACT
-        question = new Question(0001L,lbText,lbText,lbText,lbText,lbText,lbText);
+        question = new Question(0000L,lbText,lbText,lbText,lbText,lbText,lbText);
 
         // ASSERT
         assertEquals(lbText,question.getQuestionText());
@@ -38,7 +38,7 @@ public class Question_Constructor_Tests {
         String cleanedText = "This has  linebreak. Also with  single and with .";
 
         // ACT
-        question = new Question(0001L,lbText,lbText,lbText,lbText,lbText,lbText);
+        question = new Question(0000L,lbText,lbText,lbText,lbText,lbText,lbText);
 
         // ASSERT
         assertEquals(cleanedText,question.getQuestionText());
@@ -57,7 +57,7 @@ public class Question_Constructor_Tests {
         Question question;
 
         // ACT
-        question = new Question(0001L,null,null,null,null,null,null);
+        question = new Question(0000L,null,null,null,null,null,null);
 
         // ASSERT
         assertEquals(null,question.getQuestionText());
@@ -76,7 +76,7 @@ public class Question_Constructor_Tests {
         Question question;
 
         // ACT
-        question = new Question(0001L,"","","","","","");
+        question = new Question(0000L,"","","","","","");
 
         // ASSERT
         assertEquals("",question.getQuestionText());
