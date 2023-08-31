@@ -1,16 +1,13 @@
 package de.mme.qbot.helper.discord;
 
 import de.mme.qbot.controllers.discord.ErrorReadingImportFileException;
-import de.mme.qbot.helper.discord.ImportExportFiles;
 import de.mme.qbot.model.domain.Dare;
 import de.mme.qbot.model.domain.Question;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import utils.DareImportFileFactory;
-import utils.ImportFiles;
-import utils.QuestionImportFileFactory;
+import testUtils.ImportFiles;
 
 import java.io.BufferedReader;
 import java.io.IOException;
