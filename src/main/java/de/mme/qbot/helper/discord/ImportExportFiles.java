@@ -3,6 +3,7 @@ package de.mme.qbot.helper.discord;
 import de.mme.qbot.controllers.discord.ErrorReadingImportFileException;
 import de.mme.qbot.model.domain.Dare;
 import de.mme.qbot.model.domain.Question;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
 import java.time.LocalDateTime;
@@ -32,8 +33,10 @@ public class ImportExportFiles {
 
 
     public static List<Question> ReadQuestionsFromImportfile(BufferedReader br) throws ErrorReadingImportFileException {
-        List<Question> retList = new ArrayList<>();
 
+        if(br==null)throw new IllegalArgumentException("BufferedReader Argument may not be null");
+
+        List<Question> retList = new ArrayList<>();
         try {
             br.lines()
                     .map(line -> line.trim())                     // Remove Blanks from beginning and end of line
@@ -42,7 +45,7 @@ public class ImportExportFiles {
                             String[] parts = line.split(SEPERATOR);
                             if(parts.length!=7) throw new RuntimeException("Question Import Format Error. Number of columns is not 6");
                             Long id =  Long.valueOf(parts[0].replace("\"", ""));
-                            parts[1] = parts[1].substring(1, parts[1].length() - 1);
+                            parts[1] = (parts[1].equals("null")) ? parts[1] = null : parts[1].substring(1, parts[1].length() - 1);
                             parts[2] = (parts[2].equals("null")) ? parts[2] = null : parts[2].substring(1, parts[2].length() - 1);
                             parts[3] = (parts[3].equals("null")) ? parts[3] = null : parts[3].substring(1, parts[3].length() - 1);
                             parts[4] = (parts[4].equals("null")) ? parts[4] = null : parts[4].substring(1, parts[4].length() - 1);
