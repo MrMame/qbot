@@ -1,11 +1,8 @@
 package utils;
 
-import de.mme.qbot.helper.discord.ImportExportFiles;
 import de.mme.qbot.model.domain.Dare;
-import de.mme.qbot.model.domain.Question;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,23 +11,17 @@ import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public class QuestionImportFileFactory {
+public class DareImportFileFactory {
 
 
     // ImportFile Syntax --------------------------------------------------------------
-    private static final String FILENAME_PREFIX_EXPORT_QUESTIONS = "qbot-questions-export";
+    private static final String FILENAME_PREFIX_EXPORT_DARES = "qbot-dares-export";
 
-    private static final String FILE_QUESTIONS_FIRSTROW_TEXT = "qBot-Questions Exportfile\r\n";
-    private static final String CSV_HEADERNAME_QUESTION = "question";
-    private static final String CSV_HEADERNAME_ANSWER_A = "answer-a";
-    private static final String CSV_HEADERNAME_ANSWER_B = "answer-b";
-    private static final String CSV_HEADERNAME_ANSWER_C = "answer-c";
-    private static final String CSV_HEADERNAME_ANSWER_D = "answer-d";
-    private static final String CSV_HEADERNAME_ANSWER_E = "answer-e";
+    private static final String FILE_DARES_FIRSTROW_TEXT = "qBot-Dares Exportfile\r\n";
+    private static final String CSV_HEADERNAME_DARE = "dare";
     private static final String CSV_HEADERNAME_ID = "id";
     private static final String EXPORT_DATETIMEROW_TEXT_PREFIX = "Export DateTime - ";
     private static final String COMMENT_CHARACTER = "#";
@@ -46,7 +37,7 @@ public class QuestionImportFileFactory {
 //        retFile.toFile().setWritable(true);
 //        retFile.toFile().delete();
 //    }
-//
+
 //    public static BufferedReader createBufferedReaderFromNewEmptyTestfile(String filename){
 //        Path emptyTestFile = createNewEmptyTestfile(filename);
 //        BufferedReader br;
@@ -57,8 +48,8 @@ public class QuestionImportFileFactory {
 //        }
 //        return br;
 //    }
-//
-//
+
+
 //    public static Path createNewEmptyTestfile(String filename){
 //
 //        deleteTestfile(filename);
@@ -77,7 +68,7 @@ public class QuestionImportFileFactory {
 //        return retFile;
 //    }
 
-    public static Path createNewOKTestfile(List<Question> questions,String fileName){
+    public static Path createNewOKTestfile(List<Dare> dares,String fileName){
 
 
 
@@ -87,7 +78,7 @@ public class QuestionImportFileFactory {
         // Build the File Content ___________________________________________________________
         StringBuilder fileContent = new StringBuilder();
         // -> Export Date
-        fileContent.append(COMMENT_CHARACTER + FILE_QUESTIONS_FIRSTROW_TEXT);
+        fileContent.append(COMMENT_CHARACTER + FILE_DARES_FIRSTROW_TEXT);
         fileContent.append(COMMENT_CHARACTER + EXPORT_DATETIMEROW_TEXT_PREFIX);
         fileContent.append(LocalDateTime.now());
         fileContent.append(NEWLINE_CHARACTERS);
@@ -95,32 +86,16 @@ public class QuestionImportFileFactory {
         // -> Header Row - Apending # marks Comment
         fileContent.append(COMMENT_CHARACTER);
         fileContent.append(CSV_HEADERNAME_ID + SEPERATOR);
-        fileContent.append(CSV_HEADERNAME_QUESTION + SEPERATOR);
-        fileContent.append(CSV_HEADERNAME_ANSWER_A + SEPERATOR);
-        fileContent.append(CSV_HEADERNAME_ANSWER_B + SEPERATOR);
-        fileContent.append(CSV_HEADERNAME_ANSWER_C + SEPERATOR);
-        fileContent.append(CSV_HEADERNAME_ANSWER_D + SEPERATOR);
-        fileContent.append(CSV_HEADERNAME_ANSWER_E + NEWLINE_CHARACTERS);
+        fileContent.append(CSV_HEADERNAME_DARE + NEWLINE_CHARACTERS);
 
-        // -> Questions
-        for(Question q:  questions){
+        // -> Dares
+        for(Dare d:  dares){
 
-            String qField = "\"" + q.getId() + "\"";
-            String qText = (q.getQuestionText()!=null) ? "\""+q.getQuestionText()+"\"" : "null";
-            String qAnswerA = (q.getAnswerA()!=null) ? "\""+q.getAnswerA()+"\"" : "null";
-            String qAnswerB = (q.getAnswerB()!=null) ? "\""+q.getAnswerB()+"\"" : "null";
-            String qAnswerC = (q.getAnswerC()!=null) ? "\""+q.getAnswerC()+"\"" : "null";
-            String qAnswerD = (q.getAnswerD()!=null) ? "\""+q.getAnswerD()+"\"" : "null";
-            String qAnswerE = (q.getAnswerE()!=null) ? "\""+q.getAnswerE()+"\"" : "null";
+            String dField = "\"" + d.getId() + "\"";
+            String dText = (d.getText()!=null) ? "\""+d.getText()+"\"" : "null";
 
-
-            fileContent.append(qField + SEPERATOR);
-            fileContent.append(qText + SEPERATOR);
-            fileContent.append(qAnswerA + SEPERATOR);
-            fileContent.append(qAnswerB + SEPERATOR);
-            fileContent.append(qAnswerC + SEPERATOR);
-            fileContent.append(qAnswerD + SEPERATOR);
-            fileContent.append(qAnswerE + NEWLINE_CHARACTERS);
+            fileContent.append(dField + SEPERATOR);
+            fileContent.append(dText + NEWLINE_CHARACTERS);
         }
 
         // Write the File ___________________________________________________________
@@ -132,7 +107,7 @@ public class QuestionImportFileFactory {
         return retFile;
     }
 
-//
+
 //    private static Path createNewNotAccessibleTestfile(String filename){
 //        deleteTestfile(filename);
 //        Path retFile = Paths.get(filename);
