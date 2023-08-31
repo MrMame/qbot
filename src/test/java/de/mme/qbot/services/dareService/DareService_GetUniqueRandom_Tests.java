@@ -5,10 +5,12 @@ import de.mme.qbot.services.DareService;
 import de.mme.qbot.services.MaximumDaresStoredException;
 import de.mme.qbot.services.TextIsTooLongException;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.jdbc.Sql;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,32 +25,31 @@ public class DareService_GetUniqueRandom_Tests {
     @Autowired
     DareService repo;
 
-    // todo
+    @BeforeEach
+    void clearTable(){
+        // CleanUp
+        repo.removeAll();
+    }
+
     @Test
     void gettingDareIfNoDareWasStored_ReturnsEmptyOptional() {
         // ARRANGE
-        repo.removeAll();
         // ACT
         Optional<Dare> retDare = repo.getUniqueRandomDare();
         // ASSERT
         Assertions.assertEquals(true, retDare.isEmpty());
-
-        repo.removeAll();
     }
 
     @Test
     void gettingDareIfOneDareWasStored_ReturnsStoredDare() throws MaximumDaresStoredException, TextIsTooLongException {
         // ARRANGE
-        repo.removeAll();
-        Dare newDare = new Dare(0001L,"The new Dare");
+        Dare newDare = new Dare(0000L,"The new Dare");
         repo.saveDare(newDare);
         // ACT
         Optional<Dare> storedDare = repo.getUniqueRandomDare();
 
         // ASSERT
         Assertions.assertEquals(newDare.getText(), storedDare.get().getText());
-
-        repo.removeAll();
     }
 
     @Test
@@ -57,10 +58,9 @@ public class DareService_GetUniqueRandom_Tests {
         final int NUMBER_OF_DARES_TO_INSERT = 33;
 
         // ARRANGE
-        repo.removeAll();
         List<Dare> dares = new ArrayList<>();
         for(int i = 1;i<=NUMBER_OF_DARES_TO_INSERT;i++){
-            Dare newDare = new Dare(Long.valueOf(i),"The new Dare " + i);
+            Dare newDare = new Dare(0000L,"The new Dare " + i);
             dares.add(newDare);
             repo.saveDare(newDare);
         }
@@ -89,7 +89,6 @@ public class DareService_GetUniqueRandom_Tests {
             // the should be the dare in the return list only one time, not lesse or more.
             Assertions.assertEquals(1,cntFound);
             Assertions.assertNotEquals(NUMBER_OF_DARES_TO_INSERT,cntSamePos);   // if equal, all are at same position
-            repo.removeAll();
         }
     }
 

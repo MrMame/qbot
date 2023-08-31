@@ -3,6 +3,7 @@ package de.mme.qbot.services.questionService;
 import de.mme.qbot.model.domain.Question;
 import de.mme.qbot.services.*;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -17,14 +18,19 @@ public class QuestionService_SaveQuestion_Tests {
     @Autowired
     QuestionService repo;
 
+    @BeforeEach
+    void clearTable(){
+        // CleanUp
+        repo.removeAll();
+    }
+
     @Test
     void addingQuestionToFullDb_ThrowsMaximumQuestionsStoredException() throws MaximumQuestionsStoredException, TextIsTooLongException {
         // ARRANGE
-
         // ACT
         MaximumQuestionsStoredException thrown = Assertions.assertThrows(MaximumQuestionsStoredException.class, () -> {
             for(int i = 1; i<= QuestionService.MAXIMUM_NUMBERS_OF_QUESTION_ALLOWED+1; i++){
-                repo.saveQuestion(new Question(Long.valueOf(i)
+                repo.saveQuestion(new Question(0000L
                         , "Question Text of " + i
                         , "AnswerA Text of " + i
                         , "AnswerB Text of " + i
@@ -35,22 +41,16 @@ public class QuestionService_SaveQuestion_Tests {
         });
         // ASSERT
         Assertions.assertEquals(MaximumQuestionsStoredException.class, thrown.getClass());
-        // CleanUp
-        repo.removeAll();
-
     }
 
     @Test
     void addingQuestionToEmptyDb_NoErrors() throws MaximumQuestionsStoredException, TextIsTooLongException {
-        // CleanUp
-        repo.removeAll();
         // ARRANGE
         Question newQuestion = new Question(000L,"Test Question",null,null,null,null,null);
         // ACT
         Question savedQuestion = repo.saveQuestion(newQuestion);
         // ASSERT
         assertEquals(savedQuestion.getQuestionText(),newQuestion.getQuestionText());
-
     }
 
 
