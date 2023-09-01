@@ -34,3 +34,4 @@ build/
 
 ### Remove property with development discord token
 /src/main/resources/discord.properties
+/questions-test-importfile.txt

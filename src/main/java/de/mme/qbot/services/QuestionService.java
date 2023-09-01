@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class QuestionRepoService implements IQuestionRepoService {
+public class QuestionService implements IQuestionService {
 
     public static final int MAXIMUM_NUMBERS_OF_QUESTION_ALLOWED = 500;
     IQuestionRepository repository;
@@ -19,7 +19,7 @@ public class QuestionRepoService implements IQuestionRepoService {
     List<Question> alreadyGottenQuestion = new ArrayList<>();
 
     @Autowired
-    public QuestionRepoService(IQuestionRepository repository) {
+    public QuestionService(IQuestionRepository repository) {
         this.repository = repository;
     }
 
@@ -74,6 +74,7 @@ public class QuestionRepoService implements IQuestionRepoService {
 
     @Override
     public void removeAll() {
+        alreadyGottenQuestion.clear();
         repository.deleteAll();
     }
 
