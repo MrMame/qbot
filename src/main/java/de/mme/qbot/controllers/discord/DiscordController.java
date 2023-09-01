@@ -5,6 +5,7 @@ import de.mme.qbot.controllers.discord.slashcommands.*;
 import de.mme.qbot.helper.discord.DareEmbedFactory;
 import de.mme.qbot.helper.discord.ImportExportFiles;
 import de.mme.qbot.model.domain.Dare;
+import de.mme.qbot.helper.discord.QuestionMessageFactory;
 import de.mme.qbot.model.domain.Question;
 import de.mme.qbot.services.*;
 import de.mme.qbot.services.DareService;
@@ -27,6 +28,7 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -139,23 +141,26 @@ public class DiscordController implements EventListener{
         boolean hasAnswerA=false;
         try{
             final Question uniqueQuestion =  this.questionService.getUniqueRandomQuestion().get();
-            final MessageEmbed qemb = QuestionEmbedFactory.createNormalEmbed(uniqueQuestion);
+//            final MessageEmbed qemb = QuestionEmbedFactory.createNormalEmbed(uniqueQuestion);
+            final MessageCreateData qmsg = QuestionMessageFactory.createQuestionMessage(uniqueQuestion);
 
-            event.replyEmbeds(qemb).queue((msg)->{
-                    msg.retrieveOriginal().queue((rMsg)->{
-                        if(uniqueQuestion.getAnswerA() != null && !uniqueQuestion.getAnswerA().isEmpty()){
-                            rMsg.addReaction(Emoji.fromUnicode("U+1F1E6")).queue();}  // U+1F1E6 --> A
-                        if(uniqueQuestion.getAnswerB() != null && !uniqueQuestion.getAnswerB().isEmpty()){
-                            rMsg.addReaction(Emoji.fromUnicode("U+1F1E7")).queue();}  // U+1F1E7 --> B
-                        if(uniqueQuestion.getAnswerC() != null && !uniqueQuestion.getAnswerC().isEmpty()){
-                            rMsg.addReaction(Emoji.fromUnicode("U+1F1E8")).queue();}  // U+1F1E8 --> C
-                        if(uniqueQuestion.getAnswerD() != null && !uniqueQuestion.getAnswerD().isEmpty()){
-                            rMsg.addReaction(Emoji.fromUnicode("U+1F1E9")).queue();}  // U+1F1E9 --> D
-                        if(uniqueQuestion.getAnswerE() != null && !uniqueQuestion.getAnswerE().isEmpty()){
-                            rMsg.addReaction(Emoji.fromUnicode("U+1F1EA")).queue();}  // U+1F1E6 --> E
-                    });
+            event.reply(qmsg).queue();
 
-            });
+//            event.replyEmbeds(qemb).queue((msg)->{
+//                    msg.retrieveOriginal().queue((rMsg)->{
+//                        if(uniqueQuestion.getAnswerA() != null && !uniqueQuestion.getAnswerA().isEmpty()){
+//                            rMsg.addReaction(Emoji.fromUnicode("U+1F1E6")).queue();}  // U+1F1E6 --> A
+//                        if(uniqueQuestion.getAnswerB() != null && !uniqueQuestion.getAnswerB().isEmpty()){
+//                            rMsg.addReaction(Emoji.fromUnicode("U+1F1E7")).queue();}  // U+1F1E7 --> B
+//                        if(uniqueQuestion.getAnswerC() != null && !uniqueQuestion.getAnswerC().isEmpty()){
+//                            rMsg.addReaction(Emoji.fromUnicode("U+1F1E8")).queue();}  // U+1F1E8 --> C
+//                        if(uniqueQuestion.getAnswerD() != null && !uniqueQuestion.getAnswerD().isEmpty()){
+//                            rMsg.addReaction(Emoji.fromUnicode("U+1F1E9")).queue();}  // U+1F1E9 --> D
+//                        if(uniqueQuestion.getAnswerE() != null && !uniqueQuestion.getAnswerE().isEmpty()){
+//                            rMsg.addReaction(Emoji.fromUnicode("U+1F1EA")).queue();}  // U+1F1E6 --> E
+//                    });
+//
+//            });
 
         }catch(NoSuchElementException ex){
             event.replyEmbeds(QuestionEmbedFactory.createErrorEmbed("No question available. Please add some questions first.")).queue();
