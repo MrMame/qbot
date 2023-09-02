@@ -2,25 +2,23 @@ package de.mme.qbot.controllers.discord;
 
 
 import de.mme.qbot.controllers.discord.slashcommands.*;
-import de.mme.qbot.helper.discord.DareEmbedFactory;
-import de.mme.qbot.helper.discord.ImportExportFiles;
+import de.mme.qbot.helper.discord.*;
+import de.mme.qbot.helper.discord.actionbuttons.*;
 import de.mme.qbot.model.domain.Dare;
-import de.mme.qbot.helper.discord.QuestionMessageFactory;
 import de.mme.qbot.model.domain.Question;
 import de.mme.qbot.services.*;
 import de.mme.qbot.services.DareService;
 import de.mme.qbot.services.QuestionService;
-import de.mme.qbot.helper.discord.QuestionEmbedFactory;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.events.channel.ChannelCreateEvent;
 import net.dv8tion.jda.api.events.channel.ChannelDeleteEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.hooks.EventListener;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
@@ -35,6 +33,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Controller;
+import de.mme.qbot.helper.discord.MessageCreator.SystemMessageTypes;
+
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -51,7 +51,11 @@ public class DiscordController implements EventListener{
     JDA jda;
     IQuestionService questionService;
     IDareService dareService;
+    MessageCreator msgCreator;
     List<ISlashCommand> slashCommandsList;
+    Map<String, Consumer<ActionButtonFiredEvent>> actionButtonsEventHandlersMap;
+
+
     Environment env;
 
     Map<Object, Consumer<GenericEvent>> listenerHandlersMap = new HashMap<>();
@@ -59,13 +63,14 @@ public class DiscordController implements EventListener{
     static Logger logger = LoggerFactory.getLogger(DiscordController.class);
 
     @Autowired
-    public DiscordController(Environment env, IQuestionService questionService, IDareService dareService) {
+    public DiscordController(Environment env, IQuestionService questionService, IDareService dareService, MessageCreator msgCreator) {
         this.env = env;
         // First create the Discord API Object
         this.jda = createDiscordApiObject(env);
         // Service for Question persitence
         this.questionService = questionService;
         this.dareService = dareService;
+        this.msgCreator = msgCreator;
 
         // Register all used SlashCommands and its EventHandlers, used by the DiscordController
         this.slashCommandsList = new ArrayList<>();
@@ -84,12 +89,25 @@ public class DiscordController implements EventListener{
         this.slashCommandsList.add(new QuestionImportAllSlashCommand(this::onQuestionImportAllSlashCommand));
         this.slashCommandsList.add(new DareImportAllSlashCommand(this::onDareImportAllSlashCommand));
 
+        this.actionButtonsEventHandlersMap = new HashMap<>();
+        this.actionButtonsEventHandlersMap.put(AnonymAnswerButton.BUTTON_ID, this::onDoAnonymAnswerButtonPressed);
+        this.actionButtonsEventHandlersMap.put(GetQuestionButton.BUTTON_ID,this::onGetQuestionButtonPressed);
+        this.actionButtonsEventHandlersMap.put(GetDareButton.BUTTON_ID, this::onGetDareButtonPressed);
+        this.actionButtonsEventHandlersMap.put(VoteAnswerAButton.BUTTON_ID ,this::onVoteAnswerAButtonPressed);
+        this.actionButtonsEventHandlersMap.put(VoteAnswerBButton.BUTTON_ID ,this::onVoteAnswerBButtonPressed);
+        this.actionButtonsEventHandlersMap.put(VoteAnswerCButton.BUTTON_ID,this::onVoteAnswerCButtonPressed);
+        this.actionButtonsEventHandlersMap.put(VoteAnswerDButton.BUTTON_ID ,this::onVoteAnswerDButtonPressed);
+        this.actionButtonsEventHandlersMap.put(VoteAnswerEButton.BUTTON_ID,this::onVoteAnswerEButtonPressed);
+
+
 
         // Register all JDA Events and its EventHandlers, used by the DiscordController
         this.listenerHandlersMap.put(ChannelDeleteEvent.class,this::onChannelDeleteEvent);
         this.listenerHandlersMap.put(ChannelCreateEvent.class,this::onChannelCreateEvent);
         this.listenerHandlersMap.put(ReadyEvent.class,this::onReadyEvent);
         this.listenerHandlersMap.put(SlashCommandInteractionEvent.class,this::onSlashCommandReceivedEvent);
+        this.listenerHandlersMap.put(ButtonInteractionEvent.class,this::onActionButtonPressedEvent);
+
 
         // Send all finished SlashCommands to Discord, so they will be showing up the users
         sendSlashCommandsToDiscord(this.jda ,this.slashCommandsList);
@@ -115,62 +133,67 @@ public class DiscordController implements EventListener{
         this.logger.info("FIRED ReadyEvent - API is ready");
     }
 
+
+    // --------------------------- Action Buttons Handler (Add if necessary) ----------------------------------------
+
+
+    private void onGetQuestionButtonPressed(ActionButtonFiredEvent event){
+        final Optional<Question> uniqueQuestion =  this.questionService.getUniqueRandomQuestion();
+        final MessageCreateData qmsg = msgCreator.createQuestionMessage(uniqueQuestion);
+        event.reply(qmsg).queue();
+    }
+    private void onGetDareButtonPressed(ActionButtonFiredEvent event){
+        final Optional<Dare> uniqueDare =  this.dareService.getUniqueRandomDare();
+        final MessageCreateData dMsg = msgCreator.createDareMessage(uniqueDare);
+        event.reply(dMsg).queue();
+    }
+    private void onDoAnonymAnswerButtonPressed(ActionButtonFiredEvent event){
+
+    }
+
+    private void onVoteAnswerAButtonPressed(ActionButtonFiredEvent event){
+
+    }
+    private void onVoteAnswerBButtonPressed(ActionButtonFiredEvent event){
+
+    }
+    private void onVoteAnswerCButtonPressed(ActionButtonFiredEvent event){
+
+    }
+    private void onVoteAnswerDButtonPressed(ActionButtonFiredEvent event){
+
+    }
+    private void onVoteAnswerEButtonPressed(ActionButtonFiredEvent event){
+
+    }
+
     // --------------------------- SlashCommands Events (Add if necessary) ------------------------------------------
 
     private void onQuestionGetAllSlashCommand(SlashCommandFiredEvent event){
         QuestionGetAllSlashCommand qSc = ((QuestionGetAllSlashCommand) event.getFiredSlashCommand());
 
-        StringBuilder allQuestions = new StringBuilder();
+        StringBuilder allQuestionsText = new StringBuilder();
         this.questionService.getAllQuestions().forEach((question) -> {
-            allQuestions.append(question.toString() + "\n\n");
+            allQuestionsText.append(question.toString() + "\n\n");
         });
+        // If we had no questions at all, we append only the Info Text
+        if(allQuestionsText.isEmpty()) allQuestionsText.append("No questions available.");
 
-        if(allQuestions.isEmpty())allQuestions.append("No questions available.");
+        final MessageCreateData dMsg = msgCreator.createSystemMessage(SystemMessageTypes.Info,allQuestionsText.toString());
 
-        MessageEmbed returnMessage = QuestionEmbedFactory.createSystemEmbed(allQuestions.toString());
-
-        event.replyEmbeds(returnMessage)
+        event.reply(dMsg)
                 .setEphemeral(true)
                 .queue();
-
     }
     private void onQuestionGetUniqueRandomSlashCommand(SlashCommandFiredEvent event){
-
-
-        ;
-        boolean hasAnswerA=false;
-        try{
-            final Question uniqueQuestion =  this.questionService.getUniqueRandomQuestion().get();
-//            final MessageEmbed qemb = QuestionEmbedFactory.createNormalEmbed(uniqueQuestion);
-            final MessageCreateData qmsg = QuestionMessageFactory.createQuestionMessage(uniqueQuestion);
-
+            final Optional<Question> uniqueQuestion =  this.questionService.getUniqueRandomQuestion();
+            final MessageCreateData qmsg = msgCreator.createQuestionMessage(uniqueQuestion);
             event.reply(qmsg).queue();
-
-//            event.replyEmbeds(qemb).queue((msg)->{
-//                    msg.retrieveOriginal().queue((rMsg)->{
-//                        if(uniqueQuestion.getAnswerA() != null && !uniqueQuestion.getAnswerA().isEmpty()){
-//                            rMsg.addReaction(Emoji.fromUnicode("U+1F1E6")).queue();}  // U+1F1E6 --> A
-//                        if(uniqueQuestion.getAnswerB() != null && !uniqueQuestion.getAnswerB().isEmpty()){
-//                            rMsg.addReaction(Emoji.fromUnicode("U+1F1E7")).queue();}  // U+1F1E7 --> B
-//                        if(uniqueQuestion.getAnswerC() != null && !uniqueQuestion.getAnswerC().isEmpty()){
-//                            rMsg.addReaction(Emoji.fromUnicode("U+1F1E8")).queue();}  // U+1F1E8 --> C
-//                        if(uniqueQuestion.getAnswerD() != null && !uniqueQuestion.getAnswerD().isEmpty()){
-//                            rMsg.addReaction(Emoji.fromUnicode("U+1F1E9")).queue();}  // U+1F1E9 --> D
-//                        if(uniqueQuestion.getAnswerE() != null && !uniqueQuestion.getAnswerE().isEmpty()){
-//                            rMsg.addReaction(Emoji.fromUnicode("U+1F1EA")).queue();}  // U+1F1E6 --> E
-//                    });
-//
-//            });
-
-        }catch(NoSuchElementException ex){
-            event.replyEmbeds(QuestionEmbedFactory.createErrorEmbed("No question available. Please add some questions first.")).queue();
-        }
-
     }
     private void onQuestionAddSlashCommand(SlashCommandFiredEvent event){
         QuestionAddSlashCommand questionAddSlashCommand =  ((QuestionAddSlashCommand) (event.getFiredSlashCommand()));
 
-        MessageEmbed emb = QuestionEmbedFactory.createErrorEmbed("Error while adding question");
+        MessageCreateData msg = msgCreator.createSystemMessage(SystemMessageTypes.Error,"Error while adding question");
 
         try{
             Question newQuestion
@@ -190,20 +213,20 @@ public class DiscordController implements EventListener{
                     "Error - Couldn't add question!"
                     :"OK - Added Question \n" + savedQuestion.toString();
 
-            emb = QuestionEmbedFactory.createSystemEmbed(questionAddReturnMessage);
+            msg = msgCreator.createSystemMessage(SystemMessageTypes.Info,questionAddReturnMessage);
 
         }catch(MaximumQuestionsStoredException ex){
             logger.error("The maximum number of questions is already stored in repository");
-            emb = QuestionEmbedFactory.createErrorEmbed("The maximum number of questions is already stored.\r\n"
+            msg = msgCreator.createSystemMessage(SystemMessageTypes.Error,"The maximum number of questions is already stored.\r\n"
                                                         + "You have to delete a question before adding a new one.\r\n"
                                                         + "Maximum number of allowed questions to store is " + QuestionService.MAXIMUM_NUMBERS_OF_QUESTION_ALLOWED);
         }catch(TextIsTooLongException ex){
             logger.error("User was trying to store a question with a field (question/answer) containing more characters than allowed.");
-            emb = QuestionEmbedFactory.createErrorEmbed("Shorten your text first before trying to add the question again.\r\n"
+            msg = msgCreator.createSystemMessage(SystemMessageTypes.Error,"Shorten your text first before trying to add the question again.\r\n"
                     + ex.getMessage());
         }
 
-        event.replyEmbeds(emb)
+        event.reply(msg)
                 .setEphemeral(true)
                 .queue();
     }
@@ -211,9 +234,9 @@ public class DiscordController implements EventListener{
 
         questionService.removeAll();
 
-        MessageEmbed emb = QuestionEmbedFactory.createSystemEmbed("All questions are removed.");
+        final MessageCreateData msg = msgCreator.createSystemMessage(SystemMessageTypes.Info,"All questions are removed.");
 
-        event.replyEmbeds(emb)
+        event.reply(msg)
                 .setEphemeral(true)
                 .queue();
     }
@@ -235,76 +258,66 @@ public class DiscordController implements EventListener{
                     + "\n\n " + targetQuestion.get().toString() );
         }
 
-        MessageEmbed emb = QuestionEmbedFactory.createSystemEmbed(retMessage.toString());
+        final MessageCreateData msg = msgCreator.createSystemMessage(SystemMessageTypes.Info,retMessage.toString());
 
-        event.replyEmbeds(emb)
+        event.reply(msg)
                 .setEphemeral(true)
                 .queue();
     }
     private void onQuestionExportAllSlashCommand(SlashCommandFiredEvent event){
 
-
-        // Default Error message for initialization
-        MessageEmbed messageEmb= QuestionEmbedFactory.createErrorEmbed("Error while trying to export questions.");
-
-        MessageCreateBuilder messageCreateBuilder = new MessageCreateBuilder();
+        MessageCreateData msg;
         try{
-
             // Create the Exportfile containing all questions from repo
             String exportFileContent = ImportExportFiles.createQuestionExportFileContent(questionService.getAllQuestions());
-
             // Add the exported data to the delivering message
             InputStream targetStream = new ByteArrayInputStream(exportFileContent.toString().getBytes());
-
-            // Finish wo errors, so create the sytsem message
-            messageEmb = QuestionEmbedFactory.createSystemEmbed("All questions exported.");
-
-            messageCreateBuilder.addFiles(FileUpload.fromData(targetStream, ImportExportFiles.FILENAME_PREFIX_EXPORT_QUESTIONS + ".txt"));
-            messageCreateBuilder.addEmbeds(messageEmb);
-
+            // Message
+            msg = msgCreator.createSystemMessage(SystemMessageTypes.Info,
+                    "All questions exported.",
+                    FileUpload.fromData(targetStream, ImportExportFiles.FILENAME_PREFIX_EXPORT_QUESTIONS + ".txt"));
         }catch(Exception ex){
             logger.error("Error during question export." + ex.toString());
-            messageEmb= QuestionEmbedFactory.createErrorEmbed("Error while trying to export questions.");;
-            messageCreateBuilder.addEmbeds(messageEmb);
+            msg = msgCreator.createSystemMessage(SystemMessageTypes.Error,"Error while trying to export questions.");
         }
-
         // Deliver message to discord
-        event.reply(messageCreateBuilder.build())
+        event.reply(msg)
                 .setEphemeral(true)
                 .queue();
     }
     private void onQuestionImportAllSlashCommand(SlashCommandFiredEvent event){
 
         // Default Error message for initialization
-        MessageEmbed retMessageEmb= QuestionEmbedFactory.createErrorEmbed("Error while trying to import questions.");;
+        MessageCreateData msg = msgCreator.createSystemMessage(SystemMessageTypes.Info,"InitMessage");
 
         // Read the file content into Question List
         try {
             List<Question> qList = readQuestionsFromCommandImportfileOption(event);
             RemoveAllQuestionsFromRepositioryIfNotAppendingOption(event);
             addQuestionsToRepository(qList);
-            retMessageEmb = QuestionEmbedFactory.createSystemEmbed("Question import finished ok.");
+            msg = msgCreator.createSystemMessage(SystemMessageTypes.Info,"Question import finished ok.");
         }catch(QuestionImportException e){
             logger.error(e.toString());
-            retMessageEmb = QuestionEmbedFactory.createErrorEmbed("Some Questions could not be imported.\r\n" +
+            msg = msgCreator.createSystemMessage(SystemMessageTypes.Error,"Some Questions could not be imported.\r\n" +
                                                                     "Please check the maximum length of question/answer text",
-                                                                    e.getErrorQuestions());
+                                                                    e.getErrorEntites());
         }
         catch(NoImportFileFoundException e){
             logger.error(e.toString());
-            retMessageEmb = QuestionEmbedFactory.createErrorEmbed("Importfile was not found.");
+            msg = msgCreator.createSystemMessage(SystemMessageTypes.Error,"Importfile was not found.");
+
         }catch(MaximumQuestionsStoredException e) {
             logger.error(e.toString());
-            retMessageEmb = QuestionEmbedFactory.createErrorEmbed("The maximum number of questions to store is reached.\r\n"
+            msg = msgCreator.createSystemMessage(SystemMessageTypes.Error,"The maximum number of questions to store is reached.\r\n"
                     + "Only the first " + QuestionService.MAXIMUM_NUMBERS_OF_QUESTION_ALLOWED + " Questions are imported.\r\n"
                     + "The number of allowed questions to store is " + QuestionService.MAXIMUM_NUMBERS_OF_QUESTION_ALLOWED,
-                    e.getErrQuestion());
+                    e.getErrEntities());
         }catch(ErrorReadingImportFileException e){
             logger.error(e.toString());
-            retMessageEmb = DareEmbedFactory.createErrorEmbed("Error while reading importfile: " + e.toString());
+            msg = msgCreator.createSystemMessage(SystemMessageTypes.Error,"Error while reading importfile: " + e.toString());
         }finally {
             // Deliver message to discord-user
-            event.replyEmbeds(retMessageEmb)
+            event.reply(msg)
                     .setEphemeral(true)
                     .queue();
         }
@@ -322,35 +335,22 @@ public class DiscordController implements EventListener{
 
         if(allDares.isEmpty())allDares.append("No dares available.");
 
-        MessageEmbed returnMessage = DareEmbedFactory.createSystemEmbed(allDares.toString());
+        MessageCreateData msg = msgCreator.createSystemMessage(SystemMessageTypes.Info,allDares.toString());
 
-        event.replyEmbeds(returnMessage)
+        event.reply(msg)
                 .setEphemeral(true)
                 .queue();
 
     }
     private void onDareGetUniqueRandomSlashCommand(SlashCommandFiredEvent event){
-
-
-        ;
-        boolean hasAnswerA=false;
-        try{
-            final Dare uniqueDare =  this.dareService.getUniqueRandomDare().get();
-            final MessageEmbed qemb = DareEmbedFactory.createNormalEmbed(uniqueDare);
-
-            event.replyEmbeds(qemb).queue();
-
-
-        }catch(NoSuchElementException ex){
-            event.replyEmbeds(DareEmbedFactory.createErrorEmbed("No dare available. Please add some dares first.")).queue();
-        }
-
+        Optional<Dare> uniqueDare =  this.dareService.getUniqueRandomDare();
+        MessageCreateData msg = msgCreator.createDareMessage(uniqueDare);
+        event.reply(msg).queue();
     }
     private void onDareAddSlashCommand(SlashCommandFiredEvent event){
         DareAddSlashCommand dareAddSlashCommand =  ((DareAddSlashCommand) (event.getFiredSlashCommand()));
 
-        MessageEmbed emb = DareEmbedFactory.createErrorEmbed("Error while adding dare");
-
+        MessageCreateData msg = msgCreator.createSystemMessage(SystemMessageTypes.Error,"INIT Text");
         try{
             Dare newDare
                     = new Dare(0L,
@@ -363,31 +363,27 @@ public class DiscordController implements EventListener{
             dareAddReturnMessage = (savedDare==null)?
                     "Error - Couldn't add dare!"
                     :"OK - Added Dare \n" + savedDare.toString();
-
-            emb = DareEmbedFactory.createSystemEmbed(dareAddReturnMessage);
+            msg = msgCreator.createSystemMessage(SystemMessageTypes.Info,dareAddReturnMessage);
 
         }catch(MaximumDaresStoredException ex){
             logger.error("The maximum number of dares is already stored in repository");
-            emb = DareEmbedFactory.createErrorEmbed("The maximum number of dares is already stored.\r\n"
+            msg = msgCreator.createSystemMessage(SystemMessageTypes.Error,"The maximum number of dares is already stored.\r\n"
                     + "You have to delete a dare before adding a new one.\r\n"
                     + "Maximum number of allowed dares to store is " + DareService.MAXIMUM_NUMBERS_OF_DARES_ALLOWED);
         }catch(TextIsTooLongException ex){
             logger.error("User was trying to store a dare with a field (dare/answer) containing more characters than allowed.");
-            emb = DareEmbedFactory.createErrorEmbed("Shorten your text first before trying to add the dare again.\r\n"
+            msg = msgCreator.createSystemMessage(SystemMessageTypes.Error,"Shorten your text first before trying to add the dare again.\r\n"
                     + ex.getMessage());
         }
 
-        event.replyEmbeds(emb)
+        event.reply(msg)
                 .setEphemeral(true)
                 .queue();
     }
     private void onDareRemoveAllSlashCommand(SlashCommandFiredEvent event){
-
         dareService.removeAll();
-
-        MessageEmbed emb = DareEmbedFactory.createSystemEmbed("All dares are removed.");
-
-        event.replyEmbeds(emb)
+        MessageCreateData msg = msgCreator.createSystemMessage(SystemMessageTypes.Info,"All dares are removed");
+        event.reply(msg)
                 .setEphemeral(true)
                 .queue();
     }
@@ -409,9 +405,9 @@ public class DiscordController implements EventListener{
                     + "\n\n " + targetDare.get().toString() );
         }
 
-        MessageEmbed emb = DareEmbedFactory.createSystemEmbed(retMessage.toString());
+        MessageCreateData msg = msgCreator.createSystemMessage(SystemMessageTypes.Info, retMessage.toString());
 
-        event.replyEmbeds(emb)
+        event.reply(msg)
                 .setEphemeral(true)
                 .queue();
     }
@@ -419,7 +415,7 @@ public class DiscordController implements EventListener{
 
 
         // Default Error message for initialization
-        MessageEmbed messageEmb= DareEmbedFactory.createErrorEmbed("Error while trying to export dares.");
+        MessageCreateData msg = msgCreator.createSystemMessage(SystemMessageTypes.Info,"INIT text");
 
         MessageCreateBuilder messageCreateBuilder = new MessageCreateBuilder();
         try{
@@ -431,54 +427,52 @@ public class DiscordController implements EventListener{
             InputStream targetStream = new ByteArrayInputStream(exportFileContent.toString().getBytes());
 
             // Finish wo errors, so create the sytsem message
-            messageEmb = DareEmbedFactory.createSystemEmbed("All dares exported.");
-
-            messageCreateBuilder.addFiles(FileUpload.fromData(targetStream,ImportExportFiles.FILENAME_PREFIX_EXPORT_DARES + ".txt"));
-            messageCreateBuilder.addEmbeds(messageEmb);
+            msg = msgCreator.createSystemMessage(SystemMessageTypes.Info,
+                    "All dares exported",
+                    FileUpload.fromData(targetStream,ImportExportFiles.FILENAME_PREFIX_EXPORT_DARES + ".txt"));
 
         }catch(Exception ex){
             logger.error("Error during dare export." + ex.toString());
-            messageEmb= DareEmbedFactory.createErrorEmbed("Error while trying to export dares.");;
-            messageCreateBuilder.addEmbeds(messageEmb);
+            msg = msgCreator.createSystemMessage(SystemMessageTypes.Error,"Error while trying to export dares.");
         }
 
         // Deliver message to discord
-        event.reply(messageCreateBuilder.build())
+        event.reply(msg)
                 .setEphemeral(true)
                 .queue();
     }
     private void onDareImportAllSlashCommand(SlashCommandFiredEvent event){
 
         // Default Error message for initialization
-        MessageEmbed retMessageEmb= DareEmbedFactory.createErrorEmbed("Error while trying to import dares.");;
+        MessageCreateData msg = msgCreator.createSystemMessage(SystemMessageTypes.Error,"INIT Text");
 
         // Read the file content into Dare List
         try {
             List<Dare> qList = readDaresFromCommandImportfileOption(event);
             RemoveAllDaresFromRepositioryIfNotAppendingOption(event);
             addDaresToRepository(qList);
-            retMessageEmb = DareEmbedFactory.createSystemEmbed("Dare import finished ok.");
+            msg = msgCreator.createSystemMessage(SystemMessageTypes.Info,"Dare import finished ok.");
         }catch(DareImportException e){
             logger.error(e.toString());
-            retMessageEmb = DareEmbedFactory.createErrorEmbed("Some Dares could not be imported.\r\n" +
+            msg = msgCreator.createSystemMessage(SystemMessageTypes.Info,"Some Dares could not be imported.\r\n" +
                             "Please check the maximum length of dare/answer text",
-                    e.getErrorDares());
+                    e.getErrorEntites());
         }
         catch(NoImportFileFoundException e){
             logger.error(e.toString());
-            retMessageEmb = DareEmbedFactory.createErrorEmbed("Importfile was not found.");
+            msg = msgCreator.createSystemMessage(SystemMessageTypes.Error,"Importfile was not found");
         }catch(MaximumDaresStoredException e) {
             logger.error(e.toString());
-            retMessageEmb = DareEmbedFactory.createErrorEmbed("The maximum number of dares to store is reached.\r\n"
+            msg = msgCreator.createSystemMessage(SystemMessageTypes.Error,"The maximum number of dares to store is reached.\r\n"
                             + "Only the first " + DareService.MAXIMUM_NUMBERS_OF_DARES_ALLOWED + " Dares are imported.\r\n"
                             + "The number of allowed dares to store is " + DareService.MAXIMUM_NUMBERS_OF_DARES_ALLOWED,
-                    e.getErrDares());
+                    e.getErrEntities());
         }catch(ErrorReadingImportFileException e){
             logger.error(e.toString());
-            retMessageEmb = DareEmbedFactory.createErrorEmbed("Error while reading importfile: " + e.toString());
+            msg = msgCreator.createSystemMessage(SystemMessageTypes.Error,"Error while reading importfile: " + e.toString());
         }finally {
             // Deliver message to discord-user
-            event.replyEmbeds(retMessageEmb)
+            event.reply(msg)
                     .setEphemeral(true)
                     .queue();
         }
@@ -498,9 +492,9 @@ public class DiscordController implements EventListener{
         SlashCommandInteractionEvent event = (SlashCommandInteractionEvent) genericEvent;
 
         if(isGuildAllowed(event)==false){
-            MessageEmbed errEmb = QuestionEmbedFactory.createErrorEmbed("Sorry. Your Server is not allowed to use this Bot.");
+            MessageCreateData msg = msgCreator.createSystemMessage(SystemMessageTypes.Error,"Sorry. Your Server is not allowed to use this Bot.");
             // Deliver message to discord-user
-            event.replyEmbeds(errEmb)
+            event.reply(msg)
                     .setEphemeral(true)
                     .queue();
         }else {
@@ -515,6 +509,27 @@ public class DiscordController implements EventListener{
         }
 
     }
+
+    private void onActionButtonPressedEvent(GenericEvent genericEvent){
+        ButtonInteractionEvent event = (ButtonInteractionEvent) genericEvent;
+
+        if(isGuildAllowed(event)==false){
+            MessageCreateData msg = msgCreator.createSystemMessage(SystemMessageTypes.Error,"Sorry. Your Server is not allowed to use this Bot.");
+            // Deliver message to discord-user
+            event.reply(msg)
+                    .setEphemeral(true)
+                    .queue();
+        }else {
+            actionButtonsEventHandlersMap.entrySet().stream()
+                    .filter(entrySet -> {
+                        return entrySet.getKey().equals(event.getComponentId());    // Key = ActionButtonID
+                    })
+                    .forEach(entrySet -> {
+                        entrySet.getValue().accept(new ActionButtonFiredEvent(entrySet.getKey(), event)); // Value = ActionButtonEventHandler
+                    });
+        }
+    }
+
     @Override
     public void onEvent(GenericEvent genericEvent) {
         Consumer<GenericEvent> registeredEventHandler =this.listenerHandlersMap.get(genericEvent.getClass());
@@ -680,6 +695,14 @@ public class DiscordController implements EventListener{
     }
 
     private boolean isGuildAllowed(SlashCommandInteractionEvent event){
+        Boolean retBool = false;
+        if(event.isFromGuild()){
+            String[] allowedIds = env.getProperty("settings.discord.allowedguild").split("#");
+            retBool = Arrays.stream(allowedIds).anyMatch(id->id.equals(event.getGuild().getId()));
+        }
+        return retBool;
+    }
+    private boolean isGuildAllowed(ButtonInteractionEvent event){
         Boolean retBool = false;
         if(event.isFromGuild()){
             String[] allowedIds = env.getProperty("settings.discord.allowedguild").split("#");
