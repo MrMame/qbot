@@ -2,6 +2,8 @@ package de.mme.qbot.services;
 
 import de.mme.qbot.model.domain.Dare;
 import de.mme.qbot.repositories.IDareRepository;
+import de.mme.qbot.exceptions.MaximumDaresStoredException;
+import de.mme.qbot.exceptions.TextIsTooLongException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

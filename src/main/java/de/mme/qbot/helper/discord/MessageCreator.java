@@ -1,6 +1,6 @@
 package de.mme.qbot.helper.discord;
 
-import de.mme.qbot.helper.discord.actionbuttons.*;
+import de.mme.qbot.interaction.actionbuttons.*;
 import de.mme.qbot.model.domain.Dare;
 import de.mme.qbot.model.domain.IEntity;
 import de.mme.qbot.model.domain.Question;

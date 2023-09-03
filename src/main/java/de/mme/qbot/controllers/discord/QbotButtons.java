@@ -1,6 +1,6 @@
 package de.mme.qbot.controllers.discord;
 
-import de.mme.qbot.helper.discord.actionbuttons.*;
+import de.mme.qbot.interaction.actionbuttons.*;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;

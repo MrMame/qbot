@@ -1,9 +1,8 @@
 package de.mme.qbot.services;
 
 import de.mme.qbot.model.domain.Dare;
-import de.mme.qbot.services.DareService;
-import de.mme.qbot.services.MaximumDaresStoredException;
-import de.mme.qbot.services.TextIsTooLongException;
+import de.mme.qbot.exceptions.MaximumDaresStoredException;
+import de.mme.qbot.exceptions.TextIsTooLongException;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;

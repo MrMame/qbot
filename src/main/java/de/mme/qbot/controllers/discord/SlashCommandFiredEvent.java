@@ -1,6 +1,6 @@
 package de.mme.qbot.controllers.discord;
 
-import de.mme.qbot.controllers.discord.slashcommands.ISlashCommand;
+import de.mme.qbot.interaction.slashcommands.ISlashCommand;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
 public class SlashCommandFiredEvent extends SlashCommandInteractionEvent {

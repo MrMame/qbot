@@ -1,0 +1,18 @@
+package de.mme.qbot.interaction.slashcommands;
+
+import net.dv8tion.jda.api.interactions.commands.build.CommandData;
+import net.dv8tion.jda.api.interactions.commands.build.Commands;
+import org.springframework.stereotype.Component;
+
+@Component
+public class QuestionGetAllSlashCommand extends AbstractSlashCommand{
+    public final static String COMMAND_NAME ="question-get-all";
+    public final static String COMMAND_DESCRIPTION ="Get all stored questions";
+
+
+    public QuestionGetAllSlashCommand() {
+        CommandData commandData = Commands.slash(COMMAND_NAME,COMMAND_DESCRIPTION);
+
+        this.setCommandData(commandData);
+    }
+}
