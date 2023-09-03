@@ -13,7 +13,6 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.events.channel.ChannelCreateEvent;
 import net.dv8tion.jda.api.events.channel.ChannelDeleteEvent;
@@ -48,46 +47,45 @@ import java.util.function.Consumer;
 @PropertySource("classpath:discord.properties")
 public class DiscordController implements EventListener{
 
-    JDA jda;
-    IQuestionService questionService;
-    IDareService dareService;
-    MessageCreator msgCreator;
-    List<ISlashCommand> slashCommandsList;
-    Map<String, Consumer<ActionButtonFiredEvent>> actionButtonsEventHandlersMap;
 
+    private final IQuestionService questionService;
+    private final IDareService dareService;
+    private final MessageCreator msgCreator;
+    private final QbotSlashCommands slashCommands;
+    private final Environment env;
 
-    Environment env;
-
-    Map<Object, Consumer<GenericEvent>> listenerHandlersMap = new HashMap<>();
+    private JDA jda;
+    private Map<String, Consumer<ActionButtonFiredEvent>> actionButtonsEventHandlersMap;
+    private Map<Object, Consumer<GenericEvent>> listenerHandlersMap = new HashMap<>();
 
     static Logger logger = LoggerFactory.getLogger(DiscordController.class);
 
     @Autowired
-    public DiscordController(Environment env, IQuestionService questionService, IDareService dareService, MessageCreator msgCreator) {
-        this.env = env;
-        // First create the Discord API Object
-        this.jda = createDiscordApiObject(env);
-        // Service for Question persitence
+    public DiscordController(IQuestionService questionService, IDareService dareService, MessageCreator msgCreator, QbotSlashCommands slashCommands, Environment env) {
         this.questionService = questionService;
         this.dareService = dareService;
         this.msgCreator = msgCreator;
+        this.slashCommands = slashCommands;
+        this.env = env;
+        // First create the Discord API Object
+        this.jda = createDiscordApiObject(env);
 
-        // Register all used SlashCommands and its EventHandlers, used by the DiscordController
-        this.slashCommandsList = new ArrayList<>();
-        this.slashCommandsList.add(new QuestionAddSlashCommand(this::onQuestionAddSlashCommand));
-        this.slashCommandsList.add(new DareAddSlashCommand(this::onDareAddSlashCommand));
-        //this.slashCommandsList.add(new QuestionGetAllSlashCommand(this::onQuestionGetAllSlashCommand));
-        //this.slashCommandsList.add(new DareGetAllSlashCommand(this::onDareGetAllSlashCommand));
-        this.slashCommandsList.add(new QuestionGetUniqueRandomSlashCommand(this::onQuestionGetUniqueRandomSlashCommand));
-        this.slashCommandsList.add(new DareGetUniqueRandomSlashCommand(this::onDareGetUniqueRandomSlashCommand));
-        this.slashCommandsList.add(new QuestionRemoveAllSlashCommand(this::onQuestionRemoveAllSlashCommand));
-        this.slashCommandsList.add(new DareRemoveAllSlashCommand(this::onDareRemoveAllSlashCommand));
-        this.slashCommandsList.add(new QuestionRemoveByIdSlashCommand(this::onQuestionRemoveByIdSlashCommand));
-        this.slashCommandsList.add(new DareRemoveByIdSlashCommand(this::onDareRemoveByIdSlashCommand));
-        this.slashCommandsList.add(new QuestionExportAllSlashCommand(this::onQuestionExportAllSlashCommand));
-        this.slashCommandsList.add(new DareExportAllSlashCommand(this::onDareExportAllSlashCommand));
-        this.slashCommandsList.add(new QuestionImportAllSlashCommand(this::onQuestionImportAllSlashCommand));
-        this.slashCommandsList.add(new DareImportAllSlashCommand(this::onDareImportAllSlashCommand));
+        // Register EventHandlers for Slash commands
+        slashCommands.getQuestionAddSlashCommand().setCommandHandler(this::onQuestionAddSlashCommand);
+        slashCommands.getDareAddSlashCommand().setCommandHandler(this::onDareAddSlashCommand);
+        slashCommands.getQuestionGetAllSlashCommand().setCommandHandler(this::onQuestionGetAllSlashCommand);
+        slashCommands.getDareGetAllSlashCommand().setCommandHandler(this::onDareGetAllSlashCommand);
+        slashCommands.getQuestionGetUniqueRandomSlashCommand().setCommandHandler(this::onQuestionGetUniqueRandomSlashCommand);
+        slashCommands.getDareGetUniqueRandomSlashCommand().setCommandHandler(this::onDareGetUniqueRandomSlashCommand);
+        slashCommands.getQuestionRemoveAllSlashCommand().setCommandHandler(this::onQuestionRemoveAllSlashCommand);
+        slashCommands.getDareRemoveAllSlashCommand().setCommandHandler(this::onDareRemoveAllSlashCommand);
+        slashCommands.getQuestionRemoveByIdSlashCommand().setCommandHandler(this::onQuestionRemoveByIdSlashCommand);
+        slashCommands.getDareRemoveByIdSlashCommand().setCommandHandler(this::onDareRemoveByIdSlashCommand);
+        slashCommands.getQuestionExportAllSlashCommand().setCommandHandler(this::onQuestionExportAllSlashCommand);
+        slashCommands.getDareExportAllSlashCommand().setCommandHandler(this::onDareExportAllSlashCommand);
+        slashCommands.getQuestionImportAllSlashCommand().setCommandHandler(this::onQuestionImportAllSlashCommand);
+        slashCommands.getDareImportAllSlashCommand().setCommandHandler(this::onDareImportAllSlashCommand);
+
 
         this.actionButtonsEventHandlersMap = new HashMap<>();
         this.actionButtonsEventHandlersMap.put(AnonymAnswerButton.BUTTON_ID, this::onDoAnonymAnswerButtonPressed);
@@ -110,7 +108,7 @@ public class DiscordController implements EventListener{
 
 
         // Send all finished SlashCommands to Discord, so they will be showing up the users
-        sendSlashCommandsToDiscord(this.jda ,this.slashCommandsList);
+        sendSlashCommandsToDiscord(this.jda ,slashCommands);
     }
 
 
@@ -480,10 +478,10 @@ public class DiscordController implements EventListener{
     
 
     // =========================== Internal Privates ===============================================================
-    private void sendSlashCommandsToDiscord(JDA jda,List<ISlashCommand> slashCommandsList){
+    private void sendSlashCommandsToDiscord(JDA jda,QbotSlashCommands slashCommands){
         // Now Add slash commands ===========================================
         ArrayList<CommandData> commandDatas = new ArrayList();
-        slashCommandsList.forEach((ISlashCommand)->{
+        slashCommands.getAsList().forEach((ISlashCommand)->{
             commandDatas.add(ISlashCommand.getCommandData());
         });
         jda.updateCommands().addCommands(commandDatas).queue();
@@ -499,7 +497,7 @@ public class DiscordController implements EventListener{
                     .queue();
         }else {
 
-            slashCommandsList.stream()
+            slashCommands.getAsList().stream()
                     .filter(ISlashCommand -> {
                         return ISlashCommand.getCommandData().getName().equals(event.getName());
                     })
