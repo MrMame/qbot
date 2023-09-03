@@ -2,16 +2,24 @@ package de.mme.qbot.helper.discord.actionbuttons;
 
 import java.util.function.Consumer;
 
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public abstract class AbstractButton implements IActionButton {
+public abstract class AbstractButton extends ListenerAdapter implements IActionButton {
 
 
     private Button button;
     private String id;
     private String label;
 
-    private Consumer<ActionButtonFiredEvent> eventHandler;
+
+
+    private Consumer<ButtonInteractionEvent> eventHandler;
+
+    static Logger logger = LoggerFactory.getLogger(AbstractButton.class);
 
     @Override
     public String getId() {
@@ -28,11 +36,31 @@ public abstract class AbstractButton implements IActionButton {
         return button;
     }
 
+
+
+    @Override
+    public Consumer<ButtonInteractionEvent> getEventHandler() {
+        return eventHandler;
+    }
+    @Override
+    public void setEventHandler(Consumer<ButtonInteractionEvent> eventHandler) {
+        this.eventHandler = eventHandler;
+    }
+
+
     public AbstractButton(String id, String label) {
         this.id = id;
         this.label = label;
         this.button = Button.secondary(id,label);
     }
 
+    @Override
+    public void onButtonInteraction(ButtonInteractionEvent event) {
+        super.onButtonInteraction(event);
+    if(event.getComponentId().equals(this.id)){
+        logger.info("...Start handling actionButton " + this.id);
+        this.eventHandler.accept(event);
+    }
 
+    }
 }
