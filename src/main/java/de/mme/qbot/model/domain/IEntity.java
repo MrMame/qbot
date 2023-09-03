@@ -1,5 +1,5 @@
 package de.mme.qbot.model.domain;
 
-public interface IQbotEntity {
+public interface IEntity {
     Long getId();
 }

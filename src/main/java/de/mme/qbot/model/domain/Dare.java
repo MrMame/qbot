@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import java.util.Objects;
 
 @Entity
-public class Dare implements IQbotEntity {
+public class Dare implements IEntity {
 
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
