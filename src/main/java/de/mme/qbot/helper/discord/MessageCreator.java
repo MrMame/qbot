@@ -81,7 +81,7 @@ public class MessageCreator {
     public MessageCreateData createQuestionMessage(Optional<Question> optQuestion){
         // If There is no Question to display, we return an error Message
         if(optQuestion.isEmpty()){
-            return createMessage("No Question available");
+            return createMessage("No Question available. Please add at least one question to the bot.");
         }else {
 
             Question question = optQuestion.get();
@@ -130,7 +130,7 @@ public class MessageCreator {
     public MessageCreateData createDareMessage(Optional<Dare> optDare){
         // If There is no Question to display, we return an error Message
         if(optDare.isEmpty()){
-            return createMessage("No Question available");
+            return createMessage("No Dare available. Please add at least one dare to the bot.");
         }else {
             Dare dare = optDare.get();
             MessageCreateBuilder msgB = new MessageCreateBuilder();
@@ -178,7 +178,6 @@ public class MessageCreator {
 
         // ----------------- Question Embed (Question Title, Question Description)
         addMessagesHeader(msgB,title);
-        msgB.addActionRow(anonymAnswerButton.getButton(),getQuestionButton.getButton(),getDareButton.getButton());
 
         // ------------------ Create finished message
         return msgB.build();
