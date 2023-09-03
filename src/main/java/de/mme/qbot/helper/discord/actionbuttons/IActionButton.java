@@ -10,6 +10,4 @@ public interface IActionButton extends EventListener {
     String getLabel();
     Button getButton();
 
-    Consumer<ActionButtonFiredEvent> getActionButtonEventHandler();
-    void setActionButtonEventHandler(Consumer<ActionButtonFiredEvent> actionButtonEventHandler);
 }

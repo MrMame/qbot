@@ -30,16 +30,8 @@ public abstract class AbstractButton implements IActionButton {
 
     public AbstractButton(String id, String label) {
         this.id = id;
-    }
-
-    @Override
-    public Consumer<ActionButtonFiredEvent> getActionButtonEventHandler() {
-        return this.eventHandler;
-    }
-
-    @Override
-    public void setActionButtonEventHandler(Consumer<ActionButtonFiredEvent> commandHandler) {
-        this.eventHandler = commandHandler;
+        this.label = label;
+        this.button = Button.secondary(id,label);
     }
 
 
