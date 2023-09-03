@@ -1,13 +1,11 @@
 package de.mme.qbot.model.domain;
 
-import de.mme.qbot.services.TextIsTooLongException;
 import jakarta.persistence.*;
-import jdk.jfr.DataAmount;
 
 import java.util.Objects;
 
 @Entity
-public class Question {
+public class Question implements IEntity {
 
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)

@@ -4,9 +4,10 @@ import de.mme.qbot.controllers.discord.SlashCommandFiredEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
+import org.springframework.stereotype.Component;
 
 import java.util.function.Consumer;
-
+@Component
 public class QuestionRemoveByIdSlashCommand extends AbstractSlashCommand{
 
     public final static String COMMAND_NAME ="question-remove-byid";
@@ -17,7 +18,7 @@ public class QuestionRemoveByIdSlashCommand extends AbstractSlashCommand{
 
 
 
-    public QuestionRemoveByIdSlashCommand(Consumer<SlashCommandFiredEvent> eventHandler) {
+    public QuestionRemoveByIdSlashCommand() {
 
         CommandData commandData = Commands.slash(COMMAND_NAME,COMMAND_DESCRIPTION)
                 .addOption(OptionType.INTEGER,
@@ -27,8 +28,6 @@ public class QuestionRemoveByIdSlashCommand extends AbstractSlashCommand{
 
 
         this.setCommandData(commandData);
-        this.setCommandHandler(eventHandler);
-
     }
 
 

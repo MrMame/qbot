@@ -5,7 +5,10 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 
+import org.springframework.stereotype.Component;
+
 import java.util.function.Consumer;
+@Component
 
 public class DareImportAllSlashCommand extends AbstractSlashCommand{
     public final static String COMMAND_NAME ="dare-import-all";
@@ -16,7 +19,9 @@ public class DareImportAllSlashCommand extends AbstractSlashCommand{
     public final static String COMMAND_OPTION_APPENDDATA_DESCRIPTION ="True=all dares will be appended.False=Old dares will be overwritten.";
 
 
-    public DareImportAllSlashCommand(Consumer<SlashCommandFiredEvent> eventHandler) {
+
+    public DareImportAllSlashCommand() {
+
         CommandData commandData = Commands.slash(COMMAND_NAME,COMMAND_DESCRIPTION)
                 .addOption(OptionType.ATTACHMENT,
                 COMMAND_OPTION_IMPORTFILE_NAME,
@@ -27,6 +32,6 @@ public class DareImportAllSlashCommand extends AbstractSlashCommand{
                         COMMAND_OPTION_APPENDDATA_DESCRIPTION);
 
         this.setCommandData(commandData);
-        this.setCommandHandler(eventHandler);
+
     }
 }
