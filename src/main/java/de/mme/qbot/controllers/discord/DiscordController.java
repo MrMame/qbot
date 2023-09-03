@@ -2,13 +2,16 @@ package de.mme.qbot.controllers.discord;
 
 
 import de.mme.qbot.controllers.discord.slashcommands.*;
+
 import de.mme.qbot.helper.discord.*;
 import de.mme.qbot.helper.discord.actionbuttons.*;
 import de.mme.qbot.model.domain.Dare;
+
 import de.mme.qbot.model.domain.Question;
 import de.mme.qbot.services.*;
 import de.mme.qbot.services.DareService;
 import de.mme.qbot.services.QuestionService;
+
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
@@ -48,6 +51,7 @@ import java.util.function.Consumer;
 public class DiscordController implements EventListener{
 
 
+
     private final IQuestionService questionService;
     private final IDareService dareService;
     private final MessageCreator msgCreator;
@@ -61,6 +65,7 @@ public class DiscordController implements EventListener{
     static Logger logger = LoggerFactory.getLogger(DiscordController.class);
 
     @Autowired
+
     public DiscordController(IQuestionService questionService, IDareService dareService, MessageCreator msgCreator, QbotSlashCommands slashCommands, Environment env) {
         this.questionService = questionService;
         this.dareService = dareService;
@@ -96,6 +101,7 @@ public class DiscordController implements EventListener{
         this.actionButtonsEventHandlersMap.put(VoteAnswerCButton.BUTTON_ID,this::onVoteAnswerCButtonPressed);
         this.actionButtonsEventHandlersMap.put(VoteAnswerDButton.BUTTON_ID ,this::onVoteAnswerDButtonPressed);
         this.actionButtonsEventHandlersMap.put(VoteAnswerEButton.BUTTON_ID,this::onVoteAnswerEButtonPressed);
+
 
 
 
@@ -268,12 +274,14 @@ public class DiscordController implements EventListener{
         try{
             // Create the Exportfile containing all questions from repo
             String exportFileContent = ImportExportFiles.createQuestionExportFileContent(questionService.getAllQuestions());
+
             // Add the exported data to the delivering message
             InputStream targetStream = new ByteArrayInputStream(exportFileContent.toString().getBytes());
             // Message
             msg = msgCreator.createSystemMessage(SystemMessageTypes.Info,
                     "All questions exported.",
                     FileUpload.fromData(targetStream, ImportExportFiles.FILENAME_PREFIX_EXPORT_QUESTIONS + ".txt"));
+
         }catch(Exception ex){
             logger.error("Error during question export." + ex.toString());
             msg = msgCreator.createSystemMessage(SystemMessageTypes.Error,"Error while trying to export questions.");
@@ -306,6 +314,7 @@ public class DiscordController implements EventListener{
 
         }catch(MaximumQuestionsStoredException e) {
             logger.error(e.toString());
+
             msg = msgCreator.createSystemMessage(SystemMessageTypes.Error,"The maximum number of questions to store is reached.\r\n"
                     + "Only the first " + QuestionService.MAXIMUM_NUMBERS_OF_QUESTION_ALLOWED + " Questions are imported.\r\n"
                     + "The number of allowed questions to store is " + QuestionService.MAXIMUM_NUMBERS_OF_QUESTION_ALLOWED,
@@ -313,6 +322,7 @@ public class DiscordController implements EventListener{
         }catch(ErrorReadingImportFileException e){
             logger.error(e.toString());
             msg = msgCreator.createSystemMessage(SystemMessageTypes.Error,"Error while reading importfile: " + e.toString());
+
         }finally {
             // Deliver message to discord-user
             event.reply(msg)
@@ -333,22 +343,28 @@ public class DiscordController implements EventListener{
 
         if(allDares.isEmpty())allDares.append("No dares available.");
 
+
         MessageCreateData msg = msgCreator.createSystemMessage(SystemMessageTypes.Info,allDares.toString());
 
         event.reply(msg)
+
                 .setEphemeral(true)
                 .queue();
 
     }
     private void onDareGetUniqueRandomSlashCommand(SlashCommandFiredEvent event){
+
         Optional<Dare> uniqueDare =  this.dareService.getUniqueRandomDare();
         MessageCreateData msg = msgCreator.createDareMessage(uniqueDare);
         event.reply(msg).queue();
+
     }
     private void onDareAddSlashCommand(SlashCommandFiredEvent event){
         DareAddSlashCommand dareAddSlashCommand =  ((DareAddSlashCommand) (event.getFiredSlashCommand()));
 
+
         MessageCreateData msg = msgCreator.createSystemMessage(SystemMessageTypes.Error,"INIT Text");
+
         try{
             Dare newDare
                     = new Dare(0L,
@@ -361,27 +377,33 @@ public class DiscordController implements EventListener{
             dareAddReturnMessage = (savedDare==null)?
                     "Error - Couldn't add dare!"
                     :"OK - Added Dare \n" + savedDare.toString();
+
             msg = msgCreator.createSystemMessage(SystemMessageTypes.Info,dareAddReturnMessage);
 
         }catch(MaximumDaresStoredException ex){
             logger.error("The maximum number of dares is already stored in repository");
             msg = msgCreator.createSystemMessage(SystemMessageTypes.Error,"The maximum number of dares is already stored.\r\n"
+
                     + "You have to delete a dare before adding a new one.\r\n"
                     + "Maximum number of allowed dares to store is " + DareService.MAXIMUM_NUMBERS_OF_DARES_ALLOWED);
         }catch(TextIsTooLongException ex){
             logger.error("User was trying to store a dare with a field (dare/answer) containing more characters than allowed.");
+
             msg = msgCreator.createSystemMessage(SystemMessageTypes.Error,"Shorten your text first before trying to add the dare again.\r\n"
                     + ex.getMessage());
         }
 
         event.reply(msg)
+
                 .setEphemeral(true)
                 .queue();
     }
     private void onDareRemoveAllSlashCommand(SlashCommandFiredEvent event){
+
         dareService.removeAll();
         MessageCreateData msg = msgCreator.createSystemMessage(SystemMessageTypes.Info,"All dares are removed");
         event.reply(msg)
+
                 .setEphemeral(true)
                 .queue();
     }
@@ -403,9 +425,11 @@ public class DiscordController implements EventListener{
                     + "\n\n " + targetDare.get().toString() );
         }
 
+
         MessageCreateData msg = msgCreator.createSystemMessage(SystemMessageTypes.Info, retMessage.toString());
 
         event.reply(msg)
+
                 .setEphemeral(true)
                 .queue();
     }
@@ -413,7 +437,9 @@ public class DiscordController implements EventListener{
 
 
         // Default Error message for initialization
+
         MessageCreateData msg = msgCreator.createSystemMessage(SystemMessageTypes.Info,"INIT text");
+
 
         MessageCreateBuilder messageCreateBuilder = new MessageCreateBuilder();
         try{
@@ -425,6 +451,7 @@ public class DiscordController implements EventListener{
             InputStream targetStream = new ByteArrayInputStream(exportFileContent.toString().getBytes());
 
             // Finish wo errors, so create the sytsem message
+
             msg = msgCreator.createSystemMessage(SystemMessageTypes.Info,
                     "All dares exported",
                     FileUpload.fromData(targetStream,ImportExportFiles.FILENAME_PREFIX_EXPORT_DARES + ".txt"));
@@ -436,19 +463,23 @@ public class DiscordController implements EventListener{
 
         // Deliver message to discord
         event.reply(msg)
+
                 .setEphemeral(true)
                 .queue();
     }
     private void onDareImportAllSlashCommand(SlashCommandFiredEvent event){
 
         // Default Error message for initialization
+
         MessageCreateData msg = msgCreator.createSystemMessage(SystemMessageTypes.Error,"INIT Text");
+
 
         // Read the file content into Dare List
         try {
             List<Dare> qList = readDaresFromCommandImportfileOption(event);
             RemoveAllDaresFromRepositioryIfNotAppendingOption(event);
             addDaresToRepository(qList);
+
             msg = msgCreator.createSystemMessage(SystemMessageTypes.Info,"Dare import finished ok.");
         }catch(DareImportException e){
             logger.error(e.toString());
@@ -471,6 +502,7 @@ public class DiscordController implements EventListener{
         }finally {
             // Deliver message to discord-user
             event.reply(msg)
+
                     .setEphemeral(true)
                     .queue();
         }
