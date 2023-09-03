@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>de.mme</groupId>
 	<artifactId>qbot</artifactId>
-	<version>0.0.6</version>
+	<version>0.0.7</version>
 	<name>qbot</name>
 	<description>Discord-Bot with custom questions</description>
 	<properties>
