@@ -8,7 +8,7 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AbstractButton extends ListenerAdapter implements IActionButton {
+public abstract class AbstractActionButton extends ListenerAdapter implements IActionButton {
 
 
     private Button button;
@@ -19,7 +19,7 @@ public abstract class AbstractButton extends ListenerAdapter implements IActionB
 
     private Consumer<ButtonInteractionEvent> eventHandler;
 
-    static Logger logger = LoggerFactory.getLogger(AbstractButton.class);
+    static Logger logger = LoggerFactory.getLogger(AbstractActionButton.class);
 
     @Override
     public String getId() {
@@ -48,7 +48,7 @@ public abstract class AbstractButton extends ListenerAdapter implements IActionB
     }
 
 
-    public AbstractButton(String id, String label) {
+    public AbstractActionButton(String id, String label) {
         this.id = id;
         this.label = label;
         this.button = Button.secondary(id,label);

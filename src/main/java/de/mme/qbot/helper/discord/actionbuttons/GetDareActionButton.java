@@ -3,13 +3,13 @@ package de.mme.qbot.helper.discord.actionbuttons;
 import org.springframework.stereotype.Component;
 
 @Component
-public class GetDareButton extends AbstractButton {
+public class GetDareActionButton extends AbstractActionButton {
 
     private static final String BUTTON_LABEL = "Pflicht";
     public static final String BUTTON_ID = "new-dare-button-id";
 
 
-    public GetDareButton() {
+    public GetDareActionButton() {
         super(BUTTON_ID,BUTTON_LABEL);
     }
 

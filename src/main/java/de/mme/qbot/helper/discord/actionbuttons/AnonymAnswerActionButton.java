@@ -3,13 +3,13 @@ package de.mme.qbot.helper.discord.actionbuttons;
 import org.springframework.stereotype.Component;
 
 @Component
-public class AnonymAnswerButton extends AbstractButton {
+public class AnonymAnswerActionButton extends AbstractActionButton {
 
     private static final String BUTTON_LABEL = "Anonym";
     public static final String BUTTON_ID = "anonym-button-id";
 
 
-    public AnonymAnswerButton() {
+    public AnonymAnswerActionButton() {
         super(BUTTON_ID,BUTTON_LABEL);
     }
 

@@ -23,14 +23,14 @@ import java.util.Optional;
 @Component
 public class MessageCreator {
 
-    private AnonymAnswerButton anonymAnswerButton;
-    private GetQuestionButton getQuestionButton;
-    private GetDareButton getDareButton;
-    private VoteAnswerAButton voteAnswerAButton;
-    private VoteAnswerBButton voteAnswerBButton;
-    private VoteAnswerCButton voteAnswerCButton;
-    private VoteAnswerDButton voteAnswerDButton;
-    private VoteAnswerEButton voteAnswerEButton;
+    private AnonymAnswerActionButton anonymAnswerButton;
+    private GetQuestionActionButton getQuestionButton;
+    private GetDareActionButton getDareButton;
+    private VoteAnswerAActionButton voteAnswerAButton;
+    private VoteAnswerBActionButton voteAnswerBButton;
+    private VoteAnswerCActionButton voteAnswerCButton;
+    private VoteAnswerDActionButton voteAnswerDButton;
+    private VoteAnswerEActionButton voteAnswerEButton;
 
 
     public enum SystemMessageTypes{
@@ -39,7 +39,7 @@ public class MessageCreator {
 
 
     @Autowired
-    public MessageCreator(AnonymAnswerButton anonymAnswerButton, GetQuestionButton getQuestionButton, GetDareButton getDareButton, VoteAnswerAButton voteAnswerAButton, VoteAnswerBButton voteAnswerBButton, VoteAnswerCButton voteAnswerCButton, VoteAnswerDButton voteAnswerDButton, VoteAnswerEButton voteAnswerEButton) {
+    public MessageCreator(AnonymAnswerActionButton anonymAnswerButton, GetQuestionActionButton getQuestionButton, GetDareActionButton getDareButton, VoteAnswerAActionButton voteAnswerAButton, VoteAnswerBActionButton voteAnswerBButton, VoteAnswerCActionButton voteAnswerCButton, VoteAnswerDActionButton voteAnswerDButton, VoteAnswerEActionButton voteAnswerEButton) {
         this.anonymAnswerButton = anonymAnswerButton;
         this.getQuestionButton = getQuestionButton;
         this.getDareButton = getDareButton;

@@ -9,18 +9,18 @@ import java.util.List;
 @Component
 public class QbotButtons {
 
-    private AnonymAnswerButton anonymAnswerButton;
-    private GetDareButton getDareButton;
-    private GetQuestionButton getQuestionButton;
-    private VoteAnswerAButton voteAnswerAButton;
-    private VoteAnswerBButton voteAnswerBButton;
-    private VoteAnswerCButton voteAnswerCButton;
-    private VoteAnswerDButton voteAnswerDButton;
-    private VoteAnswerEButton voteAnswerEButton;
+    private AnonymAnswerActionButton anonymAnswerButton;
+    private GetDareActionButton getDareButton;
+    private GetQuestionActionButton getQuestionButton;
+    private VoteAnswerAActionButton voteAnswerAButton;
+    private VoteAnswerBActionButton voteAnswerBButton;
+    private VoteAnswerCActionButton voteAnswerCButton;
+    private VoteAnswerDActionButton voteAnswerDButton;
+    private VoteAnswerEActionButton voteAnswerEButton;
 
     private List<IActionButton> buttons = new ArrayList<>();
 
-    public QbotButtons(AnonymAnswerButton anonymAnswerButton, GetDareButton getDareButton, GetQuestionButton getQuestionButton, VoteAnswerAButton voteAnswerAButton, VoteAnswerBButton voteAnswerBButton, VoteAnswerCButton voteAnswerCButton, VoteAnswerDButton voteAnswerDButton, VoteAnswerEButton voteAnswerEButton) {
+    public QbotButtons(AnonymAnswerActionButton anonymAnswerButton, GetDareActionButton getDareButton, GetQuestionActionButton getQuestionButton, VoteAnswerAActionButton voteAnswerAButton, VoteAnswerBActionButton voteAnswerBButton, VoteAnswerCActionButton voteAnswerCButton, VoteAnswerDActionButton voteAnswerDButton, VoteAnswerEActionButton voteAnswerEButton) {
         this.anonymAnswerButton = anonymAnswerButton;
         this.getDareButton = getDareButton;
         this.getQuestionButton = getQuestionButton;
@@ -40,35 +40,35 @@ public class QbotButtons {
         buttons.add(voteAnswerEButton);
     }
 
-    public AnonymAnswerButton getAnonymAnswerButton() {
+    public AnonymAnswerActionButton getAnonymAnswerButton() {
         return anonymAnswerButton;
     }
 
-    public GetDareButton getGetDareButton() {
+    public GetDareActionButton getGetDareButton() {
         return getDareButton;
     }
 
-    public GetQuestionButton getGetQuestionButton() {
+    public GetQuestionActionButton getGetQuestionButton() {
         return getQuestionButton;
     }
 
-    public VoteAnswerAButton getVoteAnswerAButton() {
+    public VoteAnswerAActionButton getVoteAnswerAButton() {
         return voteAnswerAButton;
     }
 
-    public VoteAnswerBButton getVoteAnswerBButton() {
+    public VoteAnswerBActionButton getVoteAnswerBButton() {
         return voteAnswerBButton;
     }
 
-    public VoteAnswerCButton getVoteAnswerCButton() {
+    public VoteAnswerCActionButton getVoteAnswerCButton() {
         return voteAnswerCButton;
     }
 
-    public VoteAnswerDButton getVoteAnswerDButton() {
+    public VoteAnswerDActionButton getVoteAnswerDButton() {
         return voteAnswerDButton;
     }
 
-    public VoteAnswerEButton getVoteAnswerEButton() {
+    public VoteAnswerEActionButton getVoteAnswerEButton() {
         return voteAnswerEButton;
     }
 
