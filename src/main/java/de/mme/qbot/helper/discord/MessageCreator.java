@@ -2,10 +2,9 @@ package de.mme.qbot.helper.discord;
 
 import de.mme.qbot.helper.discord.actionbuttons.*;
 import de.mme.qbot.model.domain.Dare;
-import de.mme.qbot.model.domain.IQbotEntity;
+import de.mme.qbot.model.domain.IEntity;
 import de.mme.qbot.model.domain.Question;
 import jakarta.annotation.Nonnull;
-import jakarta.persistence.Entity;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
@@ -54,7 +53,7 @@ public class MessageCreator {
 
 
 
-    public MessageCreateData createSystemMessage(SystemMessageTypes messageType, String messageText,@NotNull List<IQbotEntity> entities){
+    public MessageCreateData createSystemMessage(SystemMessageTypes messageType, String messageText,@NotNull List<IEntity> entities){
         MessageCreateBuilder msgB = new MessageCreateBuilder();
         MessageEmbed ebInfoText = getSystemMessageInfotextEmbed(messageType,messageText);
         msgB.addEmbeds(ebInfoText);
@@ -139,11 +138,11 @@ public class MessageCreator {
         }
     }
 
-    private MessageEmbed getIDListEmbed(List<IQbotEntity> entities){
+    private MessageEmbed getIDListEmbed(List<IEntity> entities){
         EmbedBuilder ebQuestions = new EmbedBuilder();
         ebQuestions.setTitle("Question IDs");
         StringBuilder questionIds = new StringBuilder();
-        for(IQbotEntity e:entities){
+        for(IEntity e:entities){
             questionIds.append(e.getId() + " ");
         }
         ebQuestions.setDescription(questionIds.toString());

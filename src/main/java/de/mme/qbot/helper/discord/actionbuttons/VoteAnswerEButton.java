@@ -1,7 +1,9 @@
 package de.mme.qbot.helper.discord.actionbuttons;
 
-import java.util.function.Consumer;
+import org.springframework.stereotype.Component;
 
+import java.util.function.Consumer;
+@Component
 public class VoteAnswerEButton extends AbstractButton{
 
     private static final String BUTTON_LABEL = "E";

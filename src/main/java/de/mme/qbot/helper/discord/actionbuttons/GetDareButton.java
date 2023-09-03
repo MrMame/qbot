@@ -1,7 +1,9 @@
 package de.mme.qbot.helper.discord.actionbuttons;
 
-import java.util.function.Consumer;
+import org.springframework.stereotype.Component;
 
+import java.util.function.Consumer;
+@Component
 public class GetDareButton extends AbstractButton{
 
     private static final String BUTTON_LABEL = "Pflicht";
