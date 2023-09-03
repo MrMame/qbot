@@ -1,6 +1,6 @@
 package de.mme.qbot.services;
 
-import de.mme.qbot.model.domain.IQbotEntity;
+import de.mme.qbot.model.domain.IEntity;
 import de.mme.qbot.model.domain.Question;
 
 import java.util.ArrayList;
@@ -13,7 +13,7 @@ public class MaximumQuestionsStoredException extends Exception{
     public List<Question> getErrQuestion() {
         return errQuestion;
     }
-    public List<IQbotEntity> getErrEntities(){
+    public List<IEntity> getErrEntities(){
         return errQuestion.stream().map((question)-> question).collect(Collectors.toList());
     }
 

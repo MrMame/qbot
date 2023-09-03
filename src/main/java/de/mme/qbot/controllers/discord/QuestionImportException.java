@@ -1,6 +1,6 @@
 package de.mme.qbot.controllers.discord;
 
-import de.mme.qbot.model.domain.IQbotEntity;
+import de.mme.qbot.model.domain.IEntity;
 import de.mme.qbot.model.domain.Question;
 
 import java.util.ArrayList;
@@ -14,8 +14,8 @@ public class QuestionImportException extends Exception{
     public List<Question> getErrorQuestions() {
         return errorQuestions;
     }
-    public List<IQbotEntity> getErrorEntites() {
-        List<IQbotEntity> errEntities = errorQuestions.stream().map((question)-> question).collect(Collectors.toList());
+    public List<IEntity> getErrorEntites() {
+        List<IEntity> errEntities = errorQuestions.stream().map((question)-> question).collect(Collectors.toList());
         return errEntities;
     }
 

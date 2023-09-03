@@ -1,8 +1,7 @@
 package de.mme.qbot.controllers.discord;
 
 import de.mme.qbot.model.domain.Dare;
-import de.mme.qbot.model.domain.IQbotEntity;
-import de.mme.qbot.model.domain.Question;
+import de.mme.qbot.model.domain.IEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,8 +14,8 @@ public class DareImportException extends Exception{
     public List<Dare> getErrorDares() {
         return errorDares;
     }
-    public List<IQbotEntity> getErrorEntites() {
-        List<IQbotEntity> errEntities = errorDares.stream().map((dare)-> dare).collect(Collectors.toList());
+    public List<IEntity> getErrorEntites() {
+        List<IEntity> errEntities = errorDares.stream().map((dare)-> dare).collect(Collectors.toList());
         return errEntities;
     }
 

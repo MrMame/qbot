@@ -1,8 +1,7 @@
 package de.mme.qbot.services;
 
 import de.mme.qbot.model.domain.Dare;
-import de.mme.qbot.model.domain.IQbotEntity;
-import de.mme.qbot.model.domain.Question;
+import de.mme.qbot.model.domain.IEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +13,7 @@ public class MaximumDaresStoredException extends Exception{
     public List<Dare> getErrDares() {
         return errDares;
     }
-    public List<IQbotEntity> getErrEntities(){
+    public List<IEntity> getErrEntities(){
         return errDares.stream().map(dare -> dare).collect(Collectors.toList());
     }
 
