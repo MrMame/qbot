@@ -1,10 +1,14 @@
 package de.mme.qbot.controllers.discord;
 
 
-import de.mme.qbot.controllers.discord.slashcommands.*;
 
+import de.mme.qbot.exceptions.DareImportException;
+import de.mme.qbot.exceptions.ErrorReadingImportFileException;
+import de.mme.qbot.exceptions.NoImportFileFoundException;
+import de.mme.qbot.exceptions.QuestionImportException;
+import de.mme.qbot.interaction.actionbuttons.IActionButton;
 import de.mme.qbot.helper.discord.*;
-import de.mme.qbot.helper.discord.actionbuttons.*;
+import de.mme.qbot.interaction.slashcommands.*;
 import de.mme.qbot.model.domain.Dare;
 
 import de.mme.qbot.model.domain.Question;
@@ -12,6 +16,9 @@ import de.mme.qbot.services.*;
 import de.mme.qbot.services.DareService;
 import de.mme.qbot.services.QuestionService;
 
+import de.mme.qbot.exceptions.MaximumDaresStoredException;
+import de.mme.qbot.exceptions.MaximumQuestionsStoredException;
+import de.mme.qbot.exceptions.TextIsTooLongException;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
@@ -56,51 +63,51 @@ public class DiscordController implements EventListener{
     private final IDareService dareService;
     private final MessageCreator msgCreator;
     private final QbotSlashCommands slashCommands;
+    private final QbotButtons actionButtons;
     private final Environment env;
 
     private JDA jda;
-    private Map<String, Consumer<ActionButtonFiredEvent>> actionButtonsEventHandlersMap;
+//    private Map<String, Consumer<ActionButtonFiredEvent>> actionButtonsEventHandlersMap;
     private Map<Object, Consumer<GenericEvent>> listenerHandlersMap = new HashMap<>();
 
     static Logger logger = LoggerFactory.getLogger(DiscordController.class);
 
     @Autowired
 
-    public DiscordController(IQuestionService questionService, IDareService dareService, MessageCreator msgCreator, QbotSlashCommands slashCommands, Environment env) {
+    public DiscordController(IQuestionService questionService, IDareService dareService, MessageCreator msgCreator, QbotSlashCommands slashCommands,QbotButtons actionButtons, Environment env) {
         this.questionService = questionService;
         this.dareService = dareService;
         this.msgCreator = msgCreator;
         this.slashCommands = slashCommands;
+        this.actionButtons = actionButtons;
         this.env = env;
         // First create the Discord API Object
         this.jda = createDiscordApiObject(env);
 
         // Register EventHandlers for Slash commands
-        slashCommands.getQuestionAddSlashCommand().setCommandHandler(this::onQuestionAddSlashCommand);
-        slashCommands.getDareAddSlashCommand().setCommandHandler(this::onDareAddSlashCommand);
-        slashCommands.getQuestionGetAllSlashCommand().setCommandHandler(this::onQuestionGetAllSlashCommand);
-        slashCommands.getDareGetAllSlashCommand().setCommandHandler(this::onDareGetAllSlashCommand);
-        slashCommands.getQuestionGetUniqueRandomSlashCommand().setCommandHandler(this::onQuestionGetUniqueRandomSlashCommand);
-        slashCommands.getDareGetUniqueRandomSlashCommand().setCommandHandler(this::onDareGetUniqueRandomSlashCommand);
-        slashCommands.getQuestionRemoveAllSlashCommand().setCommandHandler(this::onQuestionRemoveAllSlashCommand);
-        slashCommands.getDareRemoveAllSlashCommand().setCommandHandler(this::onDareRemoveAllSlashCommand);
-        slashCommands.getQuestionRemoveByIdSlashCommand().setCommandHandler(this::onQuestionRemoveByIdSlashCommand);
-        slashCommands.getDareRemoveByIdSlashCommand().setCommandHandler(this::onDareRemoveByIdSlashCommand);
-        slashCommands.getQuestionExportAllSlashCommand().setCommandHandler(this::onQuestionExportAllSlashCommand);
-        slashCommands.getDareExportAllSlashCommand().setCommandHandler(this::onDareExportAllSlashCommand);
-        slashCommands.getQuestionImportAllSlashCommand().setCommandHandler(this::onQuestionImportAllSlashCommand);
-        slashCommands.getDareImportAllSlashCommand().setCommandHandler(this::onDareImportAllSlashCommand);
+        this.slashCommands.getQuestionAddSlashCommand().setCommandHandler(this::onQuestionAddSlashCommand);
+        this.slashCommands.getDareAddSlashCommand().setCommandHandler(this::onDareAddSlashCommand);
+        this.slashCommands.getQuestionGetAllSlashCommand().setCommandHandler(this::onQuestionGetAllSlashCommand);
+        this.slashCommands.getDareGetAllSlashCommand().setCommandHandler(this::onDareGetAllSlashCommand);
+        this.slashCommands.getQuestionGetUniqueRandomSlashCommand().setCommandHandler(this::onQuestionGetUniqueRandomSlashCommand);
+        this.slashCommands.getDareGetUniqueRandomSlashCommand().setCommandHandler(this::onDareGetUniqueRandomSlashCommand);
+        this.slashCommands.getQuestionRemoveAllSlashCommand().setCommandHandler(this::onQuestionRemoveAllSlashCommand);
+        this.slashCommands.getDareRemoveAllSlashCommand().setCommandHandler(this::onDareRemoveAllSlashCommand);
+        this.slashCommands.getQuestionRemoveByIdSlashCommand().setCommandHandler(this::onQuestionRemoveByIdSlashCommand);
+        this.slashCommands.getDareRemoveByIdSlashCommand().setCommandHandler(this::onDareRemoveByIdSlashCommand);
+        this.slashCommands.getQuestionExportAllSlashCommand().setCommandHandler(this::onQuestionExportAllSlashCommand);
+        this.slashCommands.getDareExportAllSlashCommand().setCommandHandler(this::onDareExportAllSlashCommand);
+        this.slashCommands.getQuestionImportAllSlashCommand().setCommandHandler(this::onQuestionImportAllSlashCommand);
+        this.slashCommands.getDareImportAllSlashCommand().setCommandHandler(this::onDareImportAllSlashCommand);
 
-
-        this.actionButtonsEventHandlersMap = new HashMap<>();
-        this.actionButtonsEventHandlersMap.put(AnonymAnswerButton.BUTTON_ID, this::onDoAnonymAnswerButtonPressed);
-        this.actionButtonsEventHandlersMap.put(GetQuestionButton.BUTTON_ID,this::onGetQuestionButtonPressed);
-        this.actionButtonsEventHandlersMap.put(GetDareButton.BUTTON_ID, this::onGetDareButtonPressed);
-        this.actionButtonsEventHandlersMap.put(VoteAnswerAButton.BUTTON_ID ,this::onVoteAnswerAButtonPressed);
-        this.actionButtonsEventHandlersMap.put(VoteAnswerBButton.BUTTON_ID ,this::onVoteAnswerBButtonPressed);
-        this.actionButtonsEventHandlersMap.put(VoteAnswerCButton.BUTTON_ID,this::onVoteAnswerCButtonPressed);
-        this.actionButtonsEventHandlersMap.put(VoteAnswerDButton.BUTTON_ID ,this::onVoteAnswerDButtonPressed);
-        this.actionButtonsEventHandlersMap.put(VoteAnswerEButton.BUTTON_ID,this::onVoteAnswerEButtonPressed);
+        this.actionButtons.getAnonymAnswerButton().setEventHandler(this::onDoAnonymAnswerButtonPressed);
+        this.actionButtons.getGetQuestionButton().setEventHandler(this::onGetQuestionButtonPressed);
+        this.actionButtons.getGetDareButton().setEventHandler(this::onGetDareButtonPressed);
+        this.actionButtons.getVoteAnswerAButton().setEventHandler(this::onVoteAnswerAButtonPressed);
+        this.actionButtons.getVoteAnswerBButton().setEventHandler(this::onVoteAnswerBButtonPressed);
+        this.actionButtons.getVoteAnswerCButton().setEventHandler(this::onVoteAnswerCButtonPressed);
+        this.actionButtons.getVoteAnswerDButton().setEventHandler(this::onVoteAnswerDButtonPressed);
+        this.actionButtons.getVoteAnswerEButton().setEventHandler(this::onVoteAnswerEButtonPressed);
 
 
 
@@ -109,8 +116,8 @@ public class DiscordController implements EventListener{
         this.listenerHandlersMap.put(ChannelDeleteEvent.class,this::onChannelDeleteEvent);
         this.listenerHandlersMap.put(ChannelCreateEvent.class,this::onChannelCreateEvent);
         this.listenerHandlersMap.put(ReadyEvent.class,this::onReadyEvent);
-        this.listenerHandlersMap.put(SlashCommandInteractionEvent.class,this::onSlashCommandReceivedEvent);
-        this.listenerHandlersMap.put(ButtonInteractionEvent.class,this::onActionButtonPressedEvent);
+//        this.listenerHandlersMap.put(SlashCommandInteractionEvent.class,this::onSlashCommandReceivedEvent);
+//        this.listenerHandlersMap.put(ButtonInteractionEvent.class,this::onActionButtonPressedEvent);
 
 
         // Send all finished SlashCommands to Discord, so they will be showing up the users
@@ -141,33 +148,33 @@ public class DiscordController implements EventListener{
     // --------------------------- Action Buttons Handler (Add if necessary) ----------------------------------------
 
 
-    private void onGetQuestionButtonPressed(ActionButtonFiredEvent event){
+    private void onGetQuestionButtonPressed(ButtonInteractionEvent event){
         final Optional<Question> uniqueQuestion =  this.questionService.getUniqueRandomQuestion();
         final MessageCreateData qmsg = msgCreator.createQuestionMessage(uniqueQuestion);
         event.reply(qmsg).queue();
     }
-    private void onGetDareButtonPressed(ActionButtonFiredEvent event){
+    private void onGetDareButtonPressed(ButtonInteractionEvent event){
         final Optional<Dare> uniqueDare =  this.dareService.getUniqueRandomDare();
         final MessageCreateData dMsg = msgCreator.createDareMessage(uniqueDare);
         event.reply(dMsg).queue();
     }
-    private void onDoAnonymAnswerButtonPressed(ActionButtonFiredEvent event){
+    private void onDoAnonymAnswerButtonPressed(ButtonInteractionEvent event){
 
     }
 
-    private void onVoteAnswerAButtonPressed(ActionButtonFiredEvent event){
+    private void onVoteAnswerAButtonPressed(ButtonInteractionEvent event){
 
     }
-    private void onVoteAnswerBButtonPressed(ActionButtonFiredEvent event){
+    private void onVoteAnswerBButtonPressed(ButtonInteractionEvent event){
 
     }
-    private void onVoteAnswerCButtonPressed(ActionButtonFiredEvent event){
+    private void onVoteAnswerCButtonPressed(ButtonInteractionEvent event){
 
     }
-    private void onVoteAnswerDButtonPressed(ActionButtonFiredEvent event){
+    private void onVoteAnswerDButtonPressed(ButtonInteractionEvent event){
 
     }
-    private void onVoteAnswerEButtonPressed(ActionButtonFiredEvent event){
+    private void onVoteAnswerEButtonPressed(ButtonInteractionEvent event){
 
     }
 
@@ -518,47 +525,6 @@ public class DiscordController implements EventListener{
         });
         jda.updateCommands().addCommands(commandDatas).queue();
     }
-    private void onSlashCommandReceivedEvent(GenericEvent genericEvent){
-        SlashCommandInteractionEvent event = (SlashCommandInteractionEvent) genericEvent;
-
-        if(isGuildAllowed(event)==false){
-            MessageCreateData msg = msgCreator.createSystemMessage(SystemMessageTypes.Error,"Sorry. Your Server is not allowed to use this Bot.");
-            // Deliver message to discord-user
-            event.reply(msg)
-                    .setEphemeral(true)
-                    .queue();
-        }else {
-
-            slashCommands.getAsList().stream()
-                    .filter(ISlashCommand -> {
-                        return ISlashCommand.getCommandData().getName().equals(event.getName());
-                    })
-                    .forEach(ISlashCommand -> {
-                        ISlashCommand.getCommandHandler().accept(new SlashCommandFiredEvent(ISlashCommand, event));
-                    });
-        }
-
-    }
-
-    private void onActionButtonPressedEvent(GenericEvent genericEvent){
-        ButtonInteractionEvent event = (ButtonInteractionEvent) genericEvent;
-
-        if(isGuildAllowed(event)==false){
-            MessageCreateData msg = msgCreator.createSystemMessage(SystemMessageTypes.Error,"Sorry. Your Server is not allowed to use this Bot.");
-            // Deliver message to discord-user
-            event.reply(msg)
-                    .setEphemeral(true)
-                    .queue();
-        }else {
-            actionButtonsEventHandlersMap.entrySet().stream()
-                    .filter(entrySet -> {
-                        return entrySet.getKey().equals(event.getComponentId());    // Key = ActionButtonID
-                    })
-                    .forEach(entrySet -> {
-                        entrySet.getValue().accept(new ActionButtonFiredEvent(entrySet.getKey(), event)); // Value = ActionButtonEventHandler
-                    });
-        }
-    }
 
     @Override
     public void onEvent(GenericEvent genericEvent) {
@@ -580,10 +546,16 @@ public class DiscordController implements EventListener{
         // Enable the bulk delete event
         builder.setBulkDeleteSplittingEnabled(false);
         // Set activity (like "playing Something")
-        builder.setActivity(Activity.playing("qBot at your service"));
+        builder.setActivity(Activity.playing("at your service"));
 
         // Add Event Listeners ==============================================
         builder.addEventListeners(this);
+        for(ISlashCommand slash:this.slashCommands.getAsList()){
+            builder.addEventListeners(slash);
+        }
+        for(IActionButton button:this.actionButtons.getAsList()){
+            builder.addEventListeners(button);
+        }
         // ==================================================================
 
         // Build the JDA Object

@@ -1,6 +1,8 @@
 package de.mme.qbot.services;
 
 import de.mme.qbot.model.domain.Dare;
+import de.mme.qbot.exceptions.MaximumDaresStoredException;
+import de.mme.qbot.exceptions.TextIsTooLongException;
 
 import java.util.Optional;
 

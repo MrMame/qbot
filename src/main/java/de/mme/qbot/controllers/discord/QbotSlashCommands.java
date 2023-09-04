@@ -1,6 +1,6 @@
 package de.mme.qbot.controllers.discord;
 
-import de.mme.qbot.controllers.discord.slashcommands.*;
+import de.mme.qbot.interaction.slashcommands.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
