@@ -1,5 +1,6 @@
 package de.mme.qbot.interaction.actionbuttons;
 
+import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -10,7 +11,7 @@ public class GetDareActionButton extends AbstractActionButton {
 
 
     public GetDareActionButton() {
-        super(BUTTON_ID,BUTTON_LABEL);
+        super(ButtonStyle.DANGER,BUTTON_ID,BUTTON_LABEL);
     }
 
 

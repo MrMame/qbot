@@ -2,9 +2,11 @@ package de.mme.qbot.interaction.actionbuttons;
 
 import java.util.function.Consumer;
 
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,7 +15,7 @@ public abstract class AbstractActionButton extends ListenerAdapter implements IA
 
     private Button button;
     private String id;
-    private String label;
+    private String label="";
 
 
 
@@ -48,11 +50,17 @@ public abstract class AbstractActionButton extends ListenerAdapter implements IA
     }
 
 
-    public AbstractActionButton(String id, String label) {
+    public AbstractActionButton(ButtonStyle style, String id, String label) {
         this.id = id;
         this.label = label;
-        this.button = Button.secondary(id,label);
+        this.button = Button.of(style,id,label);
     }
+    public AbstractActionButton(ButtonStyle style,String id,Emoji emoji) {
+        this.id = id;
+        this.button = Button.of(style,id,this.label,emoji);
+    }
+
+
 
     @Override
     public void onButtonInteraction(ButtonInteractionEvent event) {
