@@ -19,10 +19,12 @@ import de.mme.qbot.services.QuestionService;
 import de.mme.qbot.exceptions.MaximumDaresStoredException;
 import de.mme.qbot.exceptions.MaximumQuestionsStoredException;
 import de.mme.qbot.exceptions.TextIsTooLongException;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.events.channel.ChannelCreateEvent;
 import net.dv8tion.jda.api.events.channel.ChannelDeleteEvent;
@@ -52,6 +54,7 @@ import java.io.InputStreamReader;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 @Controller
 @PropertySource("classpath:discord.properties")
@@ -163,19 +166,19 @@ public class DiscordController implements EventListener{
     }
 
     private void onVoteAnswerAButtonPressed(ButtonInteractionEvent event){
-
+        toggleUsernameInAnswer(event,MessageCreator.EMBED_ANSWER_A_TITLE);
     }
     private void onVoteAnswerBButtonPressed(ButtonInteractionEvent event){
-
+        toggleUsernameInAnswer(event,MessageCreator.EMBED_ANSWER_B_TITLE);
     }
     private void onVoteAnswerCButtonPressed(ButtonInteractionEvent event){
-
+        toggleUsernameInAnswer(event,MessageCreator.EMBED_ANSWER_C_TITLE);
     }
     private void onVoteAnswerDButtonPressed(ButtonInteractionEvent event){
-
+        toggleUsernameInAnswer(event,MessageCreator.EMBED_ANSWER_D_TITLE);
     }
     private void onVoteAnswerEButtonPressed(ButtonInteractionEvent event){
-
+        toggleUsernameInAnswer(event,MessageCreator.EMBED_ANSWER_E_TITLE);
     }
 
     // --------------------------- SlashCommands Events (Add if necessary) ------------------------------------------
@@ -713,5 +716,11 @@ public class DiscordController implements EventListener{
         return retBool;
     }
 
+private void toggleUsernameInAnswer(ButtonInteractionEvent event,String targetAnswerEmbedTitle){
+    List<MessageEmbed> oldEmbeds = event.getMessage().getEmbeds();
+    List<MessageEmbed> newEmbeds = EmbedsCreator.toggleUsernameInDescription(targetAnswerEmbedTitle,oldEmbeds,event.getUser());
+    event.editMessageEmbeds(newEmbeds).queue();
+
+}
 
 }

@@ -23,6 +23,11 @@ import java.util.Optional;
 @Component
 public class MessageCreator {
 
+    public static final String EMBED_ANSWER_A_TITLE = "A";
+    public static final String EMBED_ANSWER_B_TITLE = "B";
+    public static final String EMBED_ANSWER_C_TITLE = "C";
+    public static final String EMBED_ANSWER_D_TITLE = "D";
+    public static final String EMBED_ANSWER_E_TITLE = "E";
     private AnonymAnswerActionButton anonymAnswerButton;
     private GetQuestionActionButton getQuestionButton;
     private GetDareActionButton getDareButton;
@@ -92,38 +97,45 @@ public class MessageCreator {
 
 
             // ----------------- IF Answers - Answer Embed with ActionButtons
-            EmbedBuilder ebAnswers = new EmbedBuilder();
             List<Button> btnAnswers = new ArrayList<>();
+            List<MessageEmbed> embeds = new ArrayList<>();
 
             if (question.isAnswerAvailableA()) {
-                ebAnswers.addField("A", question.getAnswerA(), false);
+                embeds.add(CreateAnswerEmbed(EMBED_ANSWER_A_TITLE,question));
                 btnAnswers.add(voteAnswerAButton.getButton());
             }
 
             if (question.isAnswerAvailableB()) {
-                ebAnswers.addField("B", question.getAnswerB(), false);
+                embeds.add(CreateAnswerEmbed(EMBED_ANSWER_B_TITLE,question));
                 btnAnswers.add(voteAnswerBButton.getButton());
             }
             if (question.isAnswerAvailableC()) {
-                ebAnswers.addField("C", question.getAnswerC(), false);
+                embeds.add(CreateAnswerEmbed(EMBED_ANSWER_C_TITLE,question));
                 btnAnswers.add(voteAnswerCButton.getButton());
             }
             if (question.isAnswerAvailableD()) {
-                ebAnswers.addField("D", question.getAnswerD(), false);
+                embeds.add(CreateAnswerEmbed(EMBED_ANSWER_D_TITLE,question));
                 btnAnswers.add(voteAnswerDButton.getButton());
             }
             if (question.isAnswerAvailableE()) {
-                ebAnswers.addField("E", question.getAnswerE(), false);
+                embeds.add(CreateAnswerEmbed(EMBED_ANSWER_E_TITLE,question));
                 btnAnswers.add(voteAnswerEButton.getButton());
             }
-            if (!ebAnswers.isEmpty()) {
-                msgB.addEmbeds(ebAnswers.build());
+            if (!embeds.isEmpty()) {
+                msgB.addEmbeds(embeds);
                 msgB.addActionRow(btnAnswers);
             }
 
             // ------------------ Create finished message
             return msgB.build();
         }   // if(optQuestion.isEmpty())
+    }
+
+    private static MessageEmbed CreateAnswerEmbed(String title ,Question question) {
+        EmbedBuilder emb = new EmbedBuilder();
+        emb.setTitle(title);
+        emb.setDescription(question.getAnswerA());
+        return emb.build();
     }
 
     public MessageCreateData createDareMessage(Optional<Dare> optDare){
