@@ -65,10 +65,9 @@ public abstract class AbstractActionButton extends ListenerAdapter implements IA
     @Override
     public void onButtonInteraction(ButtonInteractionEvent event) {
         super.onButtonInteraction(event);
-    if(event.getComponentId().equals(this.id)){
-        logger.info("...Start handling actionButton " + this.id);
-        this.eventHandler.accept(event);
-    }
-
+        if(event.getComponentId().equals(this.id)){
+            logger.info("...Start handling actionButton " + this.id);
+            this.eventHandler.accept(event);
+        }
     }
 }
