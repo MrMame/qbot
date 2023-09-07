@@ -11,9 +11,6 @@ import java.util.List;
 @Component
 public class QBotEvents {
 
-
-
-
     private QbotChannelCreateEvent qbotChannelCreateEvent;
     private QbotChannelDeleteEvent qbotChannelDeleteEvent;
 

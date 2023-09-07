@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import java.util.function.Consumer;
 
 @Component
-public class QbotChannelDeleteEvent implements EventListener {
+public class QbotChannelDeleteEvent extends ListenerAdapter{ //implements EventListener {
 
 
     Consumer<ChannelDeleteEvent> eventHandler;
@@ -23,11 +23,10 @@ public class QbotChannelDeleteEvent implements EventListener {
         this.eventHandler = eventHandler;
     }
 
-
     @Override
-    public void onEvent(GenericEvent genericEvent) {
-        if(genericEvent instanceof ChannelDeleteEvent)
-            this.eventHandler.accept((ChannelDeleteEvent)genericEvent);
+    public void onChannelDelete(ChannelDeleteEvent event) {
+        super.onChannelDelete(event);
+        this.eventHandler.accept(event);
     }
 
 }
