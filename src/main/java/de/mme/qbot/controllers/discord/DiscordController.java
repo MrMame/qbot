@@ -8,6 +8,8 @@ import de.mme.qbot.exceptions.NoImportFileFoundException;
 import de.mme.qbot.exceptions.QuestionImportException;
 import de.mme.qbot.interaction.actionbuttons.IActionButton;
 import de.mme.qbot.helper.discord.*;
+import de.mme.qbot.interaction.modals.AnonymAnswerModal;
+import de.mme.qbot.interaction.modals.IQbotModal;
 import de.mme.qbot.interaction.slashcommands.*;
 import de.mme.qbot.model.domain.Dare;
 
@@ -19,7 +21,6 @@ import de.mme.qbot.services.QuestionService;
 import de.mme.qbot.exceptions.MaximumDaresStoredException;
 import de.mme.qbot.exceptions.MaximumQuestionsStoredException;
 import de.mme.qbot.exceptions.TextIsTooLongException;
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
@@ -28,12 +29,14 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.events.channel.ChannelCreateEvent;
 import net.dv8tion.jda.api.events.channel.ChannelDeleteEvent;
+import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.hooks.EventListener;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
+import net.dv8tion.jda.api.interactions.modals.Modal;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
@@ -54,7 +57,6 @@ import java.io.InputStreamReader;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 @Controller
 @PropertySource("classpath:discord.properties")
@@ -67,6 +69,7 @@ public class DiscordController implements EventListener{
     private final MessageCreator msgCreator;
     private final QbotSlashCommands slashCommands;
     private final QbotButtons actionButtons;
+    private final QBotModals qbotModals;
     private final Environment env;
 
     private JDA jda;
@@ -77,12 +80,13 @@ public class DiscordController implements EventListener{
 
     @Autowired
 
-    public DiscordController(IQuestionService questionService, IDareService dareService, MessageCreator msgCreator, QbotSlashCommands slashCommands,QbotButtons actionButtons, Environment env) {
+    public DiscordController(IQuestionService questionService, IDareService dareService, MessageCreator msgCreator, QbotSlashCommands slashCommands,QbotButtons actionButtons, Environment env,QBotModals qbModals) {
         this.questionService = questionService;
         this.dareService = dareService;
         this.msgCreator = msgCreator;
         this.slashCommands = slashCommands;
         this.actionButtons = actionButtons;
+        this.qbotModals = qbModals;
         this.env = env;
         // First create the Discord API Object
         this.jda = createDiscordApiObject(env);
@@ -112,7 +116,7 @@ public class DiscordController implements EventListener{
         this.actionButtons.getVoteAnswerDButton().setEventHandler(this::onVoteAnswerDButtonPressed);
         this.actionButtons.getVoteAnswerEButton().setEventHandler(this::onVoteAnswerEButtonPressed);
 
-
+        this.qbotModals.getAnonymAnswerModal().setEventHandler(this::onReceiveAnonymAnswerModal);
 
 
         // Register all JDA Events and its EventHandlers, used by the DiscordController
@@ -162,7 +166,8 @@ public class DiscordController implements EventListener{
         event.reply(dMsg).queue();
     }
     private void onDoAnonymAnswerButtonPressed(ButtonInteractionEvent event){
-
+        Modal modal = this.qbotModals.getAnonymAnswerModal().getModal();
+        event.replyModal(modal).queue();
     }
 
     private void onVoteAnswerAButtonPressed(ButtonInteractionEvent event){
@@ -517,7 +522,15 @@ public class DiscordController implements EventListener{
                     .queue();
         }
     }
-    
+
+    // =========================== MODALs Events ===============================================================
+
+    private void onReceiveAnonymAnswerModal(ModalInteractionEvent event){
+        event.reply("Jemand hat geantwortet: \r\n\r\n"
+                    + event.getValue(AnonymAnswerModal.MODAL_ANONYM_ASNWER_INPUTFIELD_ID).getAsString()
+        ).queue();
+    }
+
 
     // =========================== Internal Privates ===============================================================
     private void sendSlashCommandsToDiscord(JDA jda,QbotSlashCommands slashCommands){
@@ -558,6 +571,9 @@ public class DiscordController implements EventListener{
         }
         for(IActionButton button:this.actionButtons.getAsList()){
             builder.addEventListeners(button);
+        }
+        for(IQbotModal modal:this.qbotModals.getAsList()){
+            builder.addEventListeners(modal);
         }
         // ==================================================================
 
