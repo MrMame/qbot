@@ -7,7 +7,7 @@ import net.dv8tion.jda.api.interactions.modals.Modal;
 import org.springframework.stereotype.Component;
 
 @Component
-public class AnonymAnswerModal extends AbstractQbModal{
+public class AnonymAnswerModal extends AbstractQbotModal {
 
     public static final String MODAL_ID = "anonym-answer-modal-id";
     public static final String MODAL_TITLE = "Anonym Antworten";

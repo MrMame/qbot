@@ -5,7 +5,7 @@ import net.dv8tion.jda.api.interactions.modals.Modal;
 
 import java.util.function.Consumer;
 
-public interface IQbModal {
+public interface IQbotModal {
 
     String getId();
 

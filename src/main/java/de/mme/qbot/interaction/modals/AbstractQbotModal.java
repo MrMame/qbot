@@ -1,17 +1,14 @@
 package de.mme.qbot.interaction.modals;
 
-import de.mme.qbot.controllers.discord.SlashCommandFiredEvent;
-import de.mme.qbot.interaction.slashcommands.AbstractSlashCommand;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.modals.Modal;
-import okhttp3.EventListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.function.Consumer;
 
-public class AbstractQbModal extends ListenerAdapter implements IQbModal{
+public class AbstractQbotModal extends ListenerAdapter implements IQbotModal {
 
     private String id = "";
     protected Modal modal;
@@ -19,7 +16,7 @@ public class AbstractQbModal extends ListenerAdapter implements IQbModal{
 
     private Consumer<ModalInteractionEvent> commandHandler;
 
-    static Logger logger = LoggerFactory.getLogger(AbstractQbModal.class);
+    static Logger logger = LoggerFactory.getLogger(AbstractQbotModal.class);
 
 
 
@@ -44,7 +41,7 @@ public class AbstractQbModal extends ListenerAdapter implements IQbModal{
     }
 
 
-    public AbstractQbModal(String id) {
+    public AbstractQbotModal(String id) {
         this.id = id;
     }
 

@@ -9,7 +9,7 @@ import de.mme.qbot.exceptions.QuestionImportException;
 import de.mme.qbot.interaction.actionbuttons.IActionButton;
 import de.mme.qbot.helper.discord.*;
 import de.mme.qbot.interaction.modals.AnonymAnswerModal;
-import de.mme.qbot.interaction.modals.IQbModal;
+import de.mme.qbot.interaction.modals.IQbotModal;
 import de.mme.qbot.interaction.slashcommands.*;
 import de.mme.qbot.model.domain.Dare;
 
@@ -572,7 +572,7 @@ public class DiscordController implements EventListener{
         for(IActionButton button:this.actionButtons.getAsList()){
             builder.addEventListeners(button);
         }
-        for(IQbModal modal:this.qbotModals.getAsList()){
+        for(IQbotModal modal:this.qbotModals.getAsList()){
             builder.addEventListeners(modal);
         }
         // ==================================================================
