@@ -56,11 +56,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Consumer;
 
 @Controller
 @PropertySource("classpath:discord.properties")
-public class DiscordController implements EventListener{
+public class DiscordController {
 
 
 
@@ -70,26 +69,29 @@ public class DiscordController implements EventListener{
     private final QbotSlashCommands slashCommands;
     private final QbotButtons actionButtons;
     private final QBotModals qbotModals;
+    private final QBotEvents qbotEvents;
     private final Environment env;
 
     private JDA jda;
 //    private Map<String, Consumer<ActionButtonFiredEvent>> actionButtonsEventHandlersMap;
-    private Map<Object, Consumer<GenericEvent>> listenerHandlersMap = new HashMap<>();
+//    private Map<Object, Consumer<GenericEvent>> listenerHandlersMap = new HashMap<>();
 
     static Logger logger = LoggerFactory.getLogger(DiscordController.class);
 
     @Autowired
 
-    public DiscordController(IQuestionService questionService, IDareService dareService, MessageCreator msgCreator, QbotSlashCommands slashCommands,QbotButtons actionButtons, Environment env,QBotModals qbModals) {
+    public DiscordController(IQuestionService questionService, IDareService dareService, MessageCreator msgCreator, QbotSlashCommands slashCommands, QbotButtons actionButtons, Environment env, QBotModals qbModals, QBotEvents qbotEvents) {
         this.questionService = questionService;
         this.dareService = dareService;
         this.msgCreator = msgCreator;
         this.slashCommands = slashCommands;
         this.actionButtons = actionButtons;
         this.qbotModals = qbModals;
+        this.qbotEvents = qbotEvents;
         this.env = env;
         // First create the Discord API Object
         this.jda = createDiscordApiObject(env);
+
 
         // Register EventHandlers for Slash commands
         this.slashCommands.getQuestionAddSlashCommand().setCommandHandler(this::onQuestionAddSlashCommand);
@@ -118,13 +120,8 @@ public class DiscordController implements EventListener{
 
         this.qbotModals.getAnonymAnswerModal().setEventHandler(this::onReceiveAnonymAnswerModal);
 
-
-        // Register all JDA Events and its EventHandlers, used by the DiscordController
-        this.listenerHandlersMap.put(ChannelDeleteEvent.class,this::onChannelDeleteEvent);
-        this.listenerHandlersMap.put(ChannelCreateEvent.class,this::onChannelCreateEvent);
-        this.listenerHandlersMap.put(ReadyEvent.class,this::onReadyEvent);
-//        this.listenerHandlersMap.put(SlashCommandInteractionEvent.class,this::onSlashCommandReceivedEvent);
-//        this.listenerHandlersMap.put(ButtonInteractionEvent.class,this::onActionButtonPressedEvent);
+        this.qbotEvents.getQbotChannelCreateEvent().setEventHandler(this::onChannelCreateEvent);
+        this.qbotEvents.getQbotChannelDeleteEvent().setEventHandler(this::onChannelDeleteEvent);
 
 
         // Send all finished SlashCommands to Discord, so they will be showing up the users
@@ -542,11 +539,7 @@ public class DiscordController implements EventListener{
         jda.updateCommands().addCommands(commandDatas).queue();
     }
 
-    @Override
-    public void onEvent(GenericEvent genericEvent) {
-        Consumer<GenericEvent> registeredEventHandler =this.listenerHandlersMap.get(genericEvent.getClass());
-        if(registeredEventHandler!=null)registeredEventHandler.accept(genericEvent);
-    }
+
     private JDA createDiscordApiObject(Environment env){
 
 
@@ -565,7 +558,6 @@ public class DiscordController implements EventListener{
         builder.setActivity(Activity.playing("at your service"));
 
         // Add Event Listeners ==============================================
-        builder.addEventListeners(this);
         for(ISlashCommand slash:this.slashCommands.getAsList()){
             builder.addEventListeners(slash);
         }
@@ -574,6 +566,9 @@ public class DiscordController implements EventListener{
         }
         for(IQbotModal modal:this.qbotModals.getAsList()){
             builder.addEventListeners(modal);
+        }
+        for(EventListener event:this.qbotEvents.getAsList()){
+            builder.addEventListeners(event);
         }
         // ==================================================================
 
@@ -587,7 +582,6 @@ public class DiscordController implements EventListener{
             logger.warn("Abort waiting for JDA Object to get ready. There is no JDA Object available.");
             throw new RuntimeException(e);
         }
-
 
         return retJda;
     }
