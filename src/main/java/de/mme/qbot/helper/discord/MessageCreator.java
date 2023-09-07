@@ -101,24 +101,24 @@ public class MessageCreator {
             List<MessageEmbed> embeds = new ArrayList<>();
 
             if (question.isAnswerAvailableA()) {
-                embeds.add(CreateAnswerEmbed(EMBED_ANSWER_A_TITLE,question));
+                embeds.add(CreateAnswerEmbed(EMBED_ANSWER_A_TITLE,question.getAnswerA()));
                 btnAnswers.add(voteAnswerAButton.getButton());
             }
 
             if (question.isAnswerAvailableB()) {
-                embeds.add(CreateAnswerEmbed(EMBED_ANSWER_B_TITLE,question));
+                embeds.add(CreateAnswerEmbed(EMBED_ANSWER_B_TITLE,question.getAnswerB()));
                 btnAnswers.add(voteAnswerBButton.getButton());
             }
             if (question.isAnswerAvailableC()) {
-                embeds.add(CreateAnswerEmbed(EMBED_ANSWER_C_TITLE,question));
+                embeds.add(CreateAnswerEmbed(EMBED_ANSWER_C_TITLE,question.getAnswerC()));
                 btnAnswers.add(voteAnswerCButton.getButton());
             }
             if (question.isAnswerAvailableD()) {
-                embeds.add(CreateAnswerEmbed(EMBED_ANSWER_D_TITLE,question));
+                embeds.add(CreateAnswerEmbed(EMBED_ANSWER_D_TITLE,question.getAnswerD()));
                 btnAnswers.add(voteAnswerDButton.getButton());
             }
             if (question.isAnswerAvailableE()) {
-                embeds.add(CreateAnswerEmbed(EMBED_ANSWER_E_TITLE,question));
+                embeds.add(CreateAnswerEmbed(EMBED_ANSWER_E_TITLE,question.getAnswerE()));
                 btnAnswers.add(voteAnswerEButton.getButton());
             }
             if (!embeds.isEmpty()) {
@@ -131,10 +131,10 @@ public class MessageCreator {
         }   // if(optQuestion.isEmpty())
     }
 
-    private static MessageEmbed CreateAnswerEmbed(String title ,Question question) {
+    private static MessageEmbed CreateAnswerEmbed(String title ,String answerText) {
         EmbedBuilder emb = new EmbedBuilder();
         emb.setTitle(title);
-        emb.setDescription(question.getAnswerA());
+        emb.setDescription(answerText);
         return emb.build();
     }
 

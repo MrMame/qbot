@@ -62,7 +62,7 @@ import java.util.concurrent.ExecutionException;
 public class DiscordController {
 
 
-
+    public static final String ANONYM_ANSWER_TEXT_PREFIX = "**Jemand hat mir gerade geflüstert...**\r\n";
     private final IQuestionService questionService;
     private final IDareService dareService;
     private final MessageCreator msgCreator;
@@ -71,6 +71,7 @@ public class DiscordController {
     private final QBotModals qbotModals;
     private final QBotEvents qbotEvents;
     private final Environment env;
+
 
     private JDA jda;
 //    private Map<String, Consumer<ActionButtonFiredEvent>> actionButtonsEventHandlersMap;
@@ -523,7 +524,7 @@ public class DiscordController {
     // =========================== MODALs Events ===============================================================
 
     private void onReceiveAnonymAnswerModal(ModalInteractionEvent event){
-        event.reply("Jemand hat geantwortet: \r\n\r\n"
+        event.reply(ANONYM_ANSWER_TEXT_PREFIX
                     + event.getValue(AnonymAnswerModal.MODAL_ANONYM_ASNWER_INPUTFIELD_ID).getAsString()
         ).queue();
     }
