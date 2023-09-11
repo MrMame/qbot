@@ -543,13 +543,9 @@ public class DiscordController {
 
     private JDA createDiscordApiObject(Environment env){
 
-
         String discordToken = env.getProperty("settings.discord.token");
-
         JDA retJda = null;
-
         JDABuilder builder = JDABuilder.createDefault(discordToken);
-
 
         // Disable parts of the cache
         builder.disableCache(CacheFlag.MEMBER_OVERRIDES, CacheFlag.VOICE_STATE);
