@@ -10,7 +10,7 @@
         <script src="../static/scripts/logger.js" th:src="@{/scripts/logger.js}"></script>
     </head>
 
-    <body>
+    <body>     
         <span>Hello</span>
         <p th:text="${name}">Welcome to our grocery store!</p>
         <span>How are you ?</span>
@@ -18,6 +18,88 @@
         <input type="button" onclick="console.log('Hello my friend') " value="Click ME">
         <input type="button" onclick="doLog();" value="Logger ME">
 
+        <div id="container">
+            
+            <div id="stats">
+                <h1>Statistics</h1>
+                <table>
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Anzahl Questions:</td>
+                            <td>150</td>
+                        </tr>
+                    </tbody>
+                </table>                
+            </div>
+
+
+            <div id="questionlist">
+                <h1>QBot Questions</h1>
+                <table class="questionTable">
+                    <thead>
+                        <tr>
+                            <th style="width:60px;"></th>
+                            <th style="width:60px;">id</th>
+                            <th>question</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input  class="qcButton" type="button" value="Delete" onclick="console.log('Delete clicked')"></td>
+                            <td>0001</td>
+                            <td>Wurdest du schon einmal ...</td>
+                        </tr>
+                        <tr>
+                            <td><input  class="qcButton" type="button" value="Delete" onclick="console.log('Delete clicked')"></td>
+                            <td>0002</td>
+                            <td>Wurdest du schon einmal ...</td>
+                        </tr>
+                        <tr>
+                            <td><input  class="qcButton" type="button" value="Delete" onclick="console.log('Delete clicked')"></td>
+                            <td>0003</td>
+                            <td>Wurdest du schon einmal ...</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div id="questioncontrols">
+                    <a class="qcPageLink" href="#">1</a>
+                    <a class="qcPageLink" href="#">2</a>
+                    <a class="qcPageLink" href="#">3</a>
+                </div>
+            </div>
+
+
+            <div id="editor">
+                <h1>Item Editor</h1>
+                <label for="questiontext">Question Text:</label>
+                <input id ="questiontext" class="editorInput" type="text" >
+                <label for="answerA">Antwort A</label>
+                <input id ="answerA" class="editorInput" type="text" >
+                <label for="answerB">Antwort B</label>
+                <input id ="answerB" class="editorInput" type="text" >
+                <label for="answerC">Antwort C</label>
+                <input id ="answerC" class="editorInput" type="text" >
+                <label for="answerD">Antwort D</label>
+                <input id ="answerD" class="editorInput" type="text" >
+                <label for="answerE">Antwort E</label>
+                <input id ="answerE" class="editorInput" type="text" >    
+                <div id="editorControls">
+                    <input type="button" value="Save / Add" onclick="console.log('Save clicked')">
+                </div>                
+            </div>
+
+
+
+        </div>
+
+
+        
     
     </body>
 

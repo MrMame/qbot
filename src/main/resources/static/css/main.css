@@ -1,3 +1,45 @@
 body{
-    background-color:red;
+    #background-color:red;
+}
+
+#container{
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+    margin:auto;
+    width:80%;
+}
+
+#questioncontrols{
+    display:flex;
+    flex-direction: row;
+    justify-content: center;
+    
+}
+
+.questionTable{
+    width: 100%;
+    text-align: left;
+}
+
+.qcPageLink{
+    margin-left:10px;
+    margin-right:10px;
+}
+.qcButton{
+    
+}
+
+
+#editor{
+    display: flex;
+    flex-direction: column;
+}
+
+#editorControls{
+    display:flex;
+    flex-direction: row;
+    justify-content: right;
+
+    margin-top: 10px;
 }
