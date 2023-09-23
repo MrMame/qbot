@@ -149,24 +149,24 @@ the private field.
 ``` java
     @Component
     public class QBotEvents {
+        
+        ...
+        
+        public List<EventListener> getAsList(){
+            return this.events;
+        }
     
-      ...
-    
-    public List<EventListener> getAsList(){
-        return this.events;
-    }
-
-    public QbotChannelCreateEvent getQbotChannelCreateEvent() {
-        return qbotChannelCreateEvent;
-    }
-    
-    ...
+        public QbotChannelCreateEvent getQbotChannelCreateEvent() {
+            return qbotChannelCreateEvent;
+        }
+        
+        ...
     }
 ```
 
 
 
-# How to add new SlashCommands
+# Create new SlashCommand
 1. Create new SlashCommands Class inside de.mme.qbot.controllers.discord.slashcommand, e.g. EchoSlashCommand extending
 AbstractSlashCommand. Set the CommandData Object, that contains the definitions of the new SlashCommands. Those Informations
 will be shown the user when he typen a slash command in a discord channel. 
