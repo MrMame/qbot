@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+
+    <head>
+        <title>Good Thymes Virtual Grocery</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<!--        <link rel="stylesheet" type="text/css" media="all" href="../../css/gtvg.css" th:href="@{/css/gtvg.css}" />-->
+        <link rel="stylesheet" type="text/css" media="all" href="../static/css/main.css" th:href="@{/css/main.css}" />
+        <script src="../static/scripts/logger.js" th:src="@{/scripts/logger.js}"></script>
+    </head>
+
+    <body>
+        <span>Hello</span>
+        <p th:text="${name}">Welcome to our grocery store!</p>
+        <span>How are you ?</span>
+        <p id="log"></p>
+        <input type="button" onclick="console.log('Hello my friend') " value="Click ME">
+        <input type="button" onclick="doLog();" value="Logger ME">
+
+    
+    </body>
+
+</html>
