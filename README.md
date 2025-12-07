@@ -1,6 +1,9 @@
 # qBot
-Random question Discord bot.
-He will collect custom questions.
+qBot is a Discord bot for playing "Truth or dare".
+You can create your own questions and answering options.
+Simply ask the bot for a new Question and vote your answer.
+The answer will be showed to all players.
+If you are a shy one, you can answer without prompting your name.
 
 
 
